@@ -8,6 +8,18 @@ this code is poorly optimized.
 If downloaded you may notice a terrible naming scheme.
 Deal with it. Unless you don't want to.
 
+*HOW TO USE*
+Open this project in a java coding software. To make your first 3D object your first need to make a Quindow.
+After you made a Quindow you need to add a Quicture to it so it can draw stuff. Next, you make a Quworld that will contain the 3D objects.
+After that, you add any of the 3D objects available to the Quworld.
+
+*3D Objects Available*
+-Qulane (Plane)
+-Quectangular Quism (Rectangular Prism)
+-Qube (Cube)
+-Quiangular Quism (Triangular Prism)
+-Qyriamid (Pyriamid)
+
 CHANGES TO COME!
 -Distance scaling
 -Quicture Matrix Fix (wonky objects)
@@ -18,6 +30,7 @@ CHANGES TO COME!
 -Antialiasing
 -3D sphere
 -Lighting
+-Even worst name scheme
 -Pain
 
 Take this code if you want. I don't care

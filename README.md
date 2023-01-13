@@ -21,8 +21,6 @@ After that, you add any of the 3D objects available to the Quworld.
 -Qyriamid (Pyriamid)
 
 CHANGES TO COME!
--Distance scaling
--Quicture Matrix Fix (wonky objects)
 -Better Qulane z-order (planes sometimes draw in wrong order)
 -Math optimizations
 -Camera movement

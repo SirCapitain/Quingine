@@ -5,6 +5,10 @@ This 3D engine uses Quaternions to determine points in space.
 However, due to quite limited knowledge of everything,
 this code is poorly optimized.
 
+*PLEASE NOTE*
+This program is 100% CPU based. I could install a library to
+make it run on a GPU buuuuuut.... I do wanna.
+
 If downloaded you may notice a terrible naming scheme.
 Deal with it. Unless you don't want to.
 

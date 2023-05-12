@@ -1,38 +1,37 @@
 # Unreal-Quingine-3D
 A 3D engine, in java, made from scratch.
 
-This 3D engine uses Quaternions to determine points in space.
+This 3D engine uses both Quaternions and Euler to determine rotation of points in space,
+and the use of vector to determine what to draw and lighting.
 However, due to quite limited knowledge of everything,
 this code is poorly optimized.
 
 *PLEASE NOTE*
 This program is 100% CPU based. I could install a library to
-make it run on a GPU buuuuuut.... I do wanna.
+make it run on a GPU buuuuuut.... I don't wanna.
 
 If downloaded you may notice a terrible naming scheme.
 Deal with it. Unless you don't want to.
 
 *HOW TO USE*
 Open this project in a java coding software. To make your first 3D object your first need to make a Quindow.
-After you made a Quindow you need to add a Quicture to it so it can draw stuff. Next, you make a Quworld that will contain the 3D objects.
-After that, you add any of the 3D objects available to the Quworld.
+After you made a Quindow you need to add a Quicture to it so it can draw stuff. Next, create a 3D object 
+using one of the pre-shapes or using a .obj file with only points and faces only. Finally, add that to 
+the Quicture and marvel of the pretty object.
 
-*3D Objects Available*
--Qulane (Plane)
+*3D Pre-Made Objects Available*
 -Quectangular Quism (Rectangular Prism)
 -Qube (Cube)
--Quiangular Quism (Triangular Prism)
 -Qyriamid (Pyriamid)
 
-CHANGES TO COME!
--Better Qulane z-order (planes sometimes draw in wrong order)
+CHANGES TO MAYBE TO COME! (This is if I don't give up on this project)
 -Math optimizations
--Camera movement
 -Texture binding to planes
 -Antialiasing
--3D sphere
--Lighting
 -Even worst name scheme
 -Pain
 
-Take this code if you want. I don't care
+Take this code if you want. I don't care.
+It's like going through someone's garbagecan
+and taking something as your own.
+They don't care; it was their for a reason.

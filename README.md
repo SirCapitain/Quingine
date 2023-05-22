@@ -16,13 +16,18 @@ Deal with it. Unless you don't want to.
 *HOW TO USE*
 Open this project in a java coding software. To make your first 3D object your first need to make a Quindow.
 After you made a Quindow you need to add a Quicture to it so it can draw stuff. Next, create a 3D object 
-using one of the pre-shapes or using a .obj file with only points and faces only. Finally, add that to 
+using one of the pre-shapes or using a .obj (further down explains how to make a .obj) file with only points and faces only. Finally, add that to 
 the Quicture and marvel of the pretty object.
 
 *3D Pre-Made Objects Available*
 -Quectangular Quism (Rectangular Prism)
 -Qube (Cube)
 -Qyriamid (Pyriamid)
+
+*Supports blender made .obj*
+To use this cool feature, make any object in blender. Next, triangulate the whole project by selecting everything
+and pressing ctrl+T. Then export it as a .obj with UV coords off and normals off. Finally, put the .obj into the
+object folder in src and call the file by creating a quobject. AND DONE! That is all you have to do! 
 
 CHANGES TO MAYBE TO COME! (This is if I don't give up on this project)
 -Math optimizations

@@ -26,7 +26,7 @@ the Quicture and marvel of the pretty object.
 
 *Supports blender made .obj*
 To use this cool feature, make any object in blender. Next, triangulate the whole project by selecting everything
-and pressing ctrl+T. Then export it as a .obj with UV coords off and normals off. Finally, put the .obj into the
+and pressing ctrl+T. Then export it as a .obj with normals off. Finally, put the .obj into the
 object folder in src and call the file by creating a quobject. AND DONE! That is all you have to do! 
 
 CHANGES TO MAYBE TO COME! (This is if I don't give up on this project)

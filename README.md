@@ -8,7 +8,7 @@ this code is poorly optimized.
 
 *PLEASE NOTE*
 This program is 100% CPU based. I could install a library to
-make it run on a GPU buuuuuut.... I don't wanna.
+make it run on a GPU buuuuuut.... my tiny brain is fried from looking at the basic code.
 
 If downloaded you may notice a terrible naming scheme.
 Deal with it. Unless you don't want to.
@@ -31,7 +31,9 @@ object folder in src and call the file by creating a quobject. AND DONE! That is
 
 CHANGES TO MAYBE TO COME! (This is if I don't give up on this project)
 -Math optimizations
--Texture binding to planes
+-Smoother lighting
+-GPU Acceleration
+-Looking around using the mouse
 -Antialiasing
 -Even worst name scheme
 -Pain

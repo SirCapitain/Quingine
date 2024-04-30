@@ -1,4 +1,4 @@
-# Unreal-Quingine-3D
+# Quingine
 A 3D engine, in java, made from scratch.
 
 Lastest version: Quingine 23.9.9

@@ -88,7 +88,7 @@ public class Quingine {
 
 
             if (!down.get() && window.isKeyDown(KeyEvent.VK_SPACE)) {
-                world.getPlayer().hit(70);
+                world.getPlayer().hit(80);
                 down.set(true);
             }
             if (!window.isKeyDown(KeyEvent.VK_SPACE))

@@ -1,7 +1,7 @@
 # Quingine
 A 3D engine, in java, made from scratch.
 
-Lastest version: Quingine 23.9.9
+Lastest version: Quingine 24.4.30
 
 This 3D engine uses both Quaternions and Euler to determine rotation of points in space,
 and the use of vector to determine what to draw and lighting.
@@ -10,7 +10,7 @@ this code is poorly optimized.
 
 *PLEASE NOTE*
 This program is 100% CPU based. I could install a library to
-make it run on a GPU buuuuuut.... my tiny brain is fried from looking at the basic code.
+make it run on a GPU buuuuuut.... I don't wanna.
 
 If downloaded you may notice a terrible naming scheme.
 Deal with it. Unless you don't want to.
@@ -29,20 +29,20 @@ Quworld instead.
 -Few blender made .obj files
 
 *Supports blender made .obj*
-To use this cool feature, make any object in blender. Next, triangulate the whole project by selecting everything
-and pressing ctrl+T. Then export it as a .obj with normals off. Finally, put the .obj into the
-object folder in src and call the file by creating a quobject. AND DONE! That is all you have to do! 
+To use this cool feature, make any object in blender. Then export it as a .obj, triangulate the mesh, and have normals off. Finally, put the .obj into the
+object folder in resourses and call the file by creating a quobject. AND DONE! That is all you have to do! 
+
+*Supports simple physics*
+Currently in the process of adding rigid physics. The only thing working is rotation of an object based on
+force applied.
 
 CHANGES TO MAYBE TO COME! (This is if I don't give up on this project)
 -Math optimizations
 -Smoother lighting
--GPU Acceleration
+-GPU Acceleration (nah)
 -Looking around using the mouse
--Antialiasing
+-Antialiasing (just bump of the resolution)
 -Even worst naming scheme
 -Pain
 
 Take this code if you want. I don't care.
-It's like going through someone's garbagecan
-and taking something as your own.
-They don't care; it was their for a reason.

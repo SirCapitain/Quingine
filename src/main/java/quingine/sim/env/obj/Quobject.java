@@ -261,7 +261,7 @@ public class Quobject extends Quomponent {
      * Get the point on a quobject where a vector intersects
      * @param origin where the vector came from
      * @param vector where the vector is going (the vector itself)
-     * @return new quisition of the points (point.v = index of plane in quobject)
+     * @return new quisition of the points (point.v = index of plane in the quobject)
      */
 
     public Quisition getVectorIntersectionPoint(Quisition origin, Quisition vector){

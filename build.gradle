@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'com.quingine'
-version = '24.4.30'
+version = '24.5.11'
 
 repositories {
     mavenCentral()

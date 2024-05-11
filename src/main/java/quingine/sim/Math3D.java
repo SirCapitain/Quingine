@@ -297,7 +297,7 @@ public class Math3D {
         Quisition c = getCrossProduct(point, planePoints[2], planePoints[0]);
         double ab = getDotProduct(a, b);
         double bc = getDotProduct(b, c);
-        if (ab < 0 || bc < 0 || Double.isNaN(ab) || Double.isNaN(bc) || Double.isInfinite(ab) || Double.isInfinite(bc))
+        if (Double.isInfinite(ab) || Double.isInfinite(bc) || Double.isNaN(ab) || Double.isNaN(bc) || ab < 0 || bc < 0)
             return null;
         return point;
     }

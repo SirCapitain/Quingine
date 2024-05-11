@@ -272,7 +272,7 @@ public class Quworld{
 
     /**
      * Get a where the quamera is looking at based off of
-     * all the quobjects in the world.
+     * all the entities in the world.
      * @return a new quisition on the face of the quobject it is looking at (point.u = index of entity in quworld, point.v = index of plane on quobject)
      */
     public Quisition getQuameraLookingAt(){

@@ -271,7 +271,7 @@ public class Quobject extends Quomponent {
         for (int i = 0; i < planes.size(); i++) {
             Qulane plane = planes.get(i);
             Quisition testPoint = Math3D.getPlaneIntersectionPoint(plane.getPoints(), origin, posV);
-            if (testPoint == null)
+            if (testPoint == null || Math3D.getDist(origin, testPoint) >= Math3D.getDist(origin, point))
                 continue;
             point = new Quisition(testPoint);
             point.v = i;

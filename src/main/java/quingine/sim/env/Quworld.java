@@ -273,8 +273,7 @@ public class Quworld{
     /**
      * Get a where the quamera is looking at based off of
      * all the quobjects in the world.
-     * *NOTE* Does not fully work! I mean, it works... just not well with triangles... of course...
-     * @return a new quisition on the face of the quobject it is looking at (point.u = index of quobject in quworld, point.v = index of plane on quobject)
+     * @return a new quisition on the face of the quobject it is looking at (point.u = index of entity in quworld, point.v = index of plane on quobject)
      */
     public Quisition getQuameraLookingAt(){
         Quisition point = new Quisition(0,0, Integer.MAX_VALUE);

@@ -45,7 +45,7 @@ public class Quingine {
 //        picture.setMaxResolutionQuality(.25);
         picture.setPercentResolution(.4);
 
-        window.setTitle("Quingine 24.5.11");
+        window.setTitle("Quingine 24.5.21");
 
         world.load("50x50Checkers.quworld");
 

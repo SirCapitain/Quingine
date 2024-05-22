@@ -1,7 +1,7 @@
 # Quingine
 A 3D engine, in java, made from scratch.
 
-Lastest version: Quingine 24.4.30
+Lastest version: Quingine 24.5.11
 
 This 3D engine uses both Quaternions and Euler to determine rotation of points in space,
 and the use of vector to determine what to draw and lighting.

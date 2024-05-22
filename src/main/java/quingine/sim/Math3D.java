@@ -205,7 +205,10 @@ public class Math3D {
      * @return radians between
      */
     public static double getRadiansBetween(Quisition vec1, Quisition vec2){
-        return Math.acos(getDotProduct(vec1, vec2)/(getMagnitude(vec1)*getMagnitude(vec2)));
+        double r = Math.acos(getDotProduct(vec1, vec2)/(getMagnitude(vec1)*getMagnitude(vec2)));
+        if (Double.isFinite(r))
+            return r;
+        return 0;
     }
 
     /**

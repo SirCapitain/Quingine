@@ -1,7 +1,9 @@
 package quingine.sim.env.entity;
 
+import quingine.sim.Math3D;
 import quingine.sim.cam.Quamera;
 import quingine.sim.env.Quworld;
+import quingine.sim.env.entity.qysics.particle.Quarticle;
 import quingine.sim.env.entity.qysics.RigidQysic;
 import quingine.sim.pos.Quisition;
 
@@ -42,8 +44,11 @@ public class Player extends Entity{
         if (point != null){
             Entity entity = world.getEntities().get((int)point.u);
             if (entity instanceof RigidQysic qys){
+                force *= -Math.cos(Math3D.getRadiansBetween(qys.getQuobject().getPlanes().get((int)point.v).getNormal(), cam.getVector()));
                 qys.hit(cam.getPos(), cam.getVector(), force);
                 }
+            else if (entity instanceof Quarticle particle)
+                particle.hit(cam.getVector(), force);
             }
     }
 

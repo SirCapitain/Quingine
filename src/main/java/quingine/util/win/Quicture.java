@@ -303,11 +303,11 @@ public class Quicture extends JPanel {
         JSpinner res = new JSpinner(new SpinnerNumberModel(resP,0.05,1,.05));
         res.addChangeListener(e -> setPercentResolution((double)res.getValue()));
 
-        JSpinner tS = new JSpinner(new SpinnerNumberModel(world.getTickSpeed(),1,Integer.MAX_VALUE,10));
+        JSpinner tS = new JSpinner(new SpinnerNumberModel(world.getTickSpeed(),1,Integer.MAX_VALUE,1));
         tS.addChangeListener(e -> world.setTickSpeed((int)tS.getValue()));
         tS.setPreferredSize(new Dimension(50, 20));
 
-        JSpinner gS = new JSpinner(new SpinnerNumberModel(world.getQysicSpeed(),1,Integer.MAX_VALUE,10));
+        JSpinner gS = new JSpinner(new SpinnerNumberModel(world.getQysicSpeed(),1,Integer.MAX_VALUE,1));
         gS.addChangeListener(e -> world.setQysicSpeed((int)gS.getValue()));
         gS.setPreferredSize(new Dimension(50, 20));
 

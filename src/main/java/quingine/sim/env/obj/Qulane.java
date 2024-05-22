@@ -180,9 +180,16 @@ public class Qulane {
      * @param camera The current camera being used. To avoid inconsistencies when moving the camera.
      */
     public void paint(Quicture pic, Quamera camera, BufferedImage image){
-        if (!visible)
-            return;
+        if (fill & outline)
+            paint(pic, camera, image, points, texPoints, alwaysLit, color, outlineColor);
+        else if (fill)
+            paint(pic, camera, image, points, texPoints, alwaysLit, color, null);
+        else
+            paint(pic, camera, image, points, texPoints, alwaysLit, null, outlineColor);
+    }
 
+
+    public static void paint(Quicture pic, Quamera camera, BufferedImage image, Quisition[] points, Quisition[] texturePoints, boolean lit, Color fillColor, Color outlineColor){
         //Check point visibility
         int num = 0;
         for (int i = 0; i < points.length; i++)
@@ -193,7 +200,7 @@ public class Qulane {
 
         //Lighting
         double lv = 0;
-        if (!alwaysLit)
+        if (!lit)
             for (int i = 0; i < pic.getWorld().getLightSources().size(); i++) {
                 double light = (pic.getWorld().getLightSources().get(i)).getLightLevel(points);
                 if (light > lv)
@@ -206,8 +213,8 @@ public class Qulane {
         Quisition[] newPoints = new Quisition[points.length];
         for (int i = 0; i < points.length; i++) {
             newPoints[i] = camera.translate(points[i]);
-            if (texPoints != null)
-                newPoints[i].setUV(texPoints[i].u, texPoints[i].v);
+            if (texturePoints != null)
+                newPoints[i].setUV(texturePoints[i].u, texturePoints[i].v);
         }
 
         //Check if face is visible to camera
@@ -231,7 +238,7 @@ public class Qulane {
             return;
 
         //Flashlight on camera.
-        if (!alwaysLit) {
+        if (!lit) {
             double light = camera.getLightLevel(newPoints[0]);
             if (light > lv)
                 lv = light;
@@ -239,11 +246,11 @@ public class Qulane {
 
         //Draw
         for (Quisition[] triangle : triangles) {
-            if (fill)
-                Quaphics.fillTri(triangle, camera, color, lv);
             if (image != null)
                 Quaphics.drawImageTri(triangle, camera, image);
-            if (outline)
+            if (fillColor != null && image == null)
+                Quaphics.fillTri(triangle, camera, fillColor, lv);
+            if (outlineColor != null && image == null)
                 Quaphics.drawPolygon(triangle, camera, outlineColor, lv);
         }
     }

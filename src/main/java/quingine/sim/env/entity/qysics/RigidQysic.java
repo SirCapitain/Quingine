@@ -3,6 +3,7 @@ package quingine.sim.env.entity.qysics;
 import quingine.sim.Math3D;
 import quingine.sim.env.Quworld;
 import quingine.sim.env.entity.Entity;
+import quingine.sim.env.obj.Quobject;
 import quingine.sim.pos.Quisition;
 
 /**
@@ -69,29 +70,32 @@ public class RigidQysic extends Entity {
 
     /**
      * Create a force on the object from a point at a direction
-     * @param pointOfImpact where the impact games from
+     * @param pointOfImpact where the impact comes from
      * @param vectorOfImpact the direction the impact is going
+     * @param force the amount of force applied.
      */
     public void hit(Quisition pointOfImpact, Quisition vectorOfImpact, double force){
         Quisition point = getQuobject().getVectorIntersectionPoint(pointOfImpact, vectorOfImpact);
         if (point == null)
             return;
-        setRotationVec(Math3D.getRotationVector(point, pointOfImpact, vectorOfImpact, getPos()));
 
         Quisition r = new Quisition(getPos());
         r.subtract(point);
-
-        rotSpeed = force*Math3D.getMagnitude(r)*Math.sin(Math3D.getRadiansBetween(r,vectorOfImpact));
+        setRotationVec(Math3D.getRotationVector(point, pointOfImpact, vectorOfImpact, getPos()));
+        rotSpeed = force;
 
     }
 
     /**
      * Update the object based on the velocity vectors
      */
+    @Override
     public void update(Quworld world){
         rotate(rotationVec, rotSpeed/(world.getQysicSpeed()*getMass()));
         rotSpeed -= rotSpeed*(rotFriction/world.getQysicSpeed());
         if (rotSpeed < 0.001)
             rotSpeed = 0;
+
+
     }
 }

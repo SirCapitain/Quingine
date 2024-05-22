@@ -318,18 +318,17 @@ public class Quobject extends Quomponent {
      */
     @Override
     public void changePosBy(double x, double y, double z){
-        if (points == null)
+        if (points == null){
+            super.changePosBy(x, y, z);
             return;
-        if (tempPoints == null) {
-            tempPoints = new Quisition[points.length];
-            for (int i = 0; i < points.length; i++) {
-                tempPoints[i] = new Quisition(points[i]);
-                tempPoints[i].changeBy(x, y, z);
-            }
-        }else
-            for (int i = 0; i < points.length; i++)
-                tempPoints[i].changeBy(x, y, z);
-        super.changePosBy(x, y, z);
+        }
+        for (Quisition point : tempPoints)
+            point.add(x, y, z);
+        super.changePosBy(x,y,z);
+        if (update)
+            for (int i = 0; i < tempPoints.length; i++)
+                points[i].setPos(tempPoints[i]);
+
     }
 
     /**

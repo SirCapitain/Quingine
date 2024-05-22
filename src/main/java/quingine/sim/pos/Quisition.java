@@ -71,7 +71,7 @@ public class Quisition {
      * @param y position in 3D world
      * @param z position in 3D world
      */
-    public void setPos(double x, double y, double z){
+    public synchronized void setPos(double x, double y, double z){
         this.x = x;
         this.y = y;
         this.z = z;
@@ -84,7 +84,7 @@ public class Quisition {
      * @param z point in 3D space
      * @param w something
      */
-    public void setPos(double x, double y, double z, double w){
+    public synchronized void setPos(double x, double y, double z, double w){
         this.w = w;
         this.x = x;
         this.y = y;
@@ -96,7 +96,7 @@ public class Quisition {
      * This copies the info from one to the other
      * @param pos any quisition you want to copy over
      */
-    public void setPos(Quisition pos){
+    public synchronized void setPos(Quisition pos){
         w = pos.w;
         x = pos.x;
         y = pos.y;
@@ -107,7 +107,7 @@ public class Quisition {
      * Add two quisitions together.
      * @param pos another position you want to add.
      */
-    public void add(Quisition pos){
+    public synchronized void add(Quisition pos){
         w += pos.w;
         x += pos.x;
         y += pos.y;
@@ -120,7 +120,7 @@ public class Quisition {
      * @param y y-coordinate
      * @param z z-coordinate
      */
-    public void add(double x, double y, double z){
+    public synchronized void add(double x, double y, double z){
         this.x += x;
         this.y += y;
         this.z += z;
@@ -130,7 +130,7 @@ public class Quisition {
      * Add a value to the position
      * @param value number to be added to the x, y, and z
      */
-    public void add(double value){
+    public synchronized void add(double value){
         w += value;
         x += value;
         y += value;
@@ -141,7 +141,7 @@ public class Quisition {
      * Subtract two quisitions.
      * @param pos another position you want to take from the current.
      */
-    public void subtract(Quisition pos){
+    public synchronized void subtract(Quisition pos){
         w -= pos.w;
         x -= pos.x;
         y -= pos.y;
@@ -154,7 +154,7 @@ public class Quisition {
      * @param y y-coordinate
      * @param z z-coordinate
      */
-    public void subtract(double x, double y, double z){
+    public synchronized void subtract(double x, double y, double z){
         this.x -= x;
         this.y -= y;
         this.z -= z;
@@ -164,7 +164,7 @@ public class Quisition {
      * Subtract a value from a position
      * @param value amount taken from the x, y, and z
      */
-    public void subtract(double value){
+    public synchronized void subtract(double value){
         w -= value;
         x -= value;
         y -= value;
@@ -175,7 +175,7 @@ public class Quisition {
      * Multiply to quisitions together
      * @param pos another position you want to multiply the current by.
      */
-    public void multiply(Quisition pos){
+    public synchronized void multiply(Quisition pos){
         w *= pos.w;
         x *= pos.x;
         y *= pos.y;
@@ -186,7 +186,7 @@ public class Quisition {
      * Multiply a position by a value
      * @param value value the x, y, and z are multiplied by
      */
-    public void multiply(double value){
+    public synchronized void multiply(double value){
         w *= value;
         x *= value;
         y *= value;
@@ -197,7 +197,7 @@ public class Quisition {
      * Divide a quisition from another
      * @param pos another position you want to divide the current from.
      */
-    public void divide(Quisition pos){
+    public synchronized void divide(Quisition pos){
         w /= pos.w;
         x /= pos.x;
         y /= pos.y;
@@ -208,7 +208,7 @@ public class Quisition {
      * Divide a value from a position
      * @param value amount that x, y, and z are divided by
      */
-    public void divide(double value){
+    public synchronized void divide(double value){
         w /= value;
         x /= value;
         y /= value;
@@ -293,6 +293,26 @@ public class Quisition {
         this.x += x;
         this.y += y;
         this.z += z;
+    }
+
+    /**
+     * Change the position by a vector
+     * @param point double[]{x, y, z}
+     */
+    public void changeBy(double[] point){
+        x += point[0];
+        y += point[1];
+        z += point[2];
+    }
+
+    /**
+     * Change the position by a vector
+     * @param vector another Quisition
+     */
+    public void changeBy(Quisition vector){
+        x += vector.x;
+        y += vector.y;
+        z += vector.z;
     }
 
 

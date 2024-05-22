@@ -28,9 +28,9 @@ import java.util.concurrent.TimeUnit;
 
 public class Quworld{
 
-    private ArrayList<LightSource> lightSources = new ArrayList<>();
-    private ArrayList<Quobject> quobjects = new ArrayList<>();
-    private ArrayList<Entity> entities = new ArrayList<>();
+    private volatile ArrayList<LightSource> lightSources = new ArrayList<>();
+    private volatile ArrayList<Quobject> quobjects = new ArrayList<>();
+    private volatile ArrayList<Entity> entities = new ArrayList<>();
 
     private ArrayList<QuworldTickListener> tickListeners = new ArrayList<>();
 
@@ -245,11 +245,10 @@ public class Quworld{
      * Update the quworld
      */
     public void update(){
+        for (Entity entity : entities)
+            entity.update(this);
         for (QuworldTickListener listener : tickListeners)
             listener.tickUpdate(tickSpeed);
-        for (Entity entity : entities)
-            if (entity instanceof RigidQysic qys)
-                qys.update(this);
 
     }
 
@@ -278,6 +277,8 @@ public class Quworld{
     public Quisition getQuameraLookingAt(){
         Quisition point = new Quisition(0,0, Integer.MAX_VALUE);
         for (int i = 0; i < entities.size(); i++) {
+            if (entities.get(i).getQuobject() == null)
+                continue;
             Quisition testPoint = entities.get(i).getQuobject().getVectorIntersectionPoint(player.getQuamera().getPos(), player.getQuamera().getVector());
             if (testPoint.getDistance(player.getQuamera().getPos()) <= point.getDistance(player.getQuamera().getPos())) {
                 point = new Quisition(testPoint);

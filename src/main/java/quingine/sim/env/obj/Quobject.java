@@ -2,7 +2,6 @@ package quingine.sim.env.obj;
 
 import quingine.sim.Math3D;
 import quingine.sim.cam.Quamera;
-import quingine.sim.env.Quworld;
 import quingine.sim.pos.Quisition;
 import quingine.util.win.Quicture;
 import quingine.util.win.Quomponent;
@@ -13,7 +12,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -103,20 +101,22 @@ public class Quobject extends Quomponent {
             Scanner reader = new Scanner(object);
             while (reader.hasNext()){
                 String data = reader.next();
-                if (data.equals("v"))
-                    points.add(new Quisition(Double.parseDouble(reader.next())*size+x,Double.parseDouble(reader.next())*size+y,Double.parseDouble(reader.next())*size+z));
-                else if (data.equals("vt"))
-                    texturePoints.add(new Quisition(0,0,0,0, Double.parseDouble(reader.next()),Double.parseDouble(reader.next())));
-                else if (data.equals("f"))
-                    for (int i = 0; i < 3; i++) {
-                        data = reader.next();
-                        if (data.contains("/")) {
-                            textureFaces.add(Integer.parseInt(data.substring(data.indexOf("/")+1))-1);
-                            faces.add(Integer.parseInt(data.substring(0,data.indexOf("/")))-1);
+                switch (data) {
+                    case "v" ->
+                            points.add(new Quisition(Double.parseDouble(reader.next()) * size + x, Double.parseDouble(reader.next()) * size + y, Double.parseDouble(reader.next()) * size + z));
+                    case "vt" ->
+                            texturePoints.add(new Quisition(0, 0, 0, 0, Double.parseDouble(reader.next()), Double.parseDouble(reader.next())));
+                    case "f" -> {
+                        for (int i = 0; i < 3; i++) {
+                            data = reader.next();
+                            if (data.contains("/")) {
+                                textureFaces.add(Integer.parseInt(data.substring(data.indexOf("/") + 1)) - 1);
+                                faces.add(Integer.parseInt(data.substring(0, data.indexOf("/"))) - 1);
+                            } else
+                                faces.add(Integer.parseInt(data) - 1);
                         }
-                        else
-                            faces.add(Integer.parseInt(data)-1);
                     }
+                }
             }
             setPoints(points);
             for (int i = 0; i < faces.size() / 3; i++){

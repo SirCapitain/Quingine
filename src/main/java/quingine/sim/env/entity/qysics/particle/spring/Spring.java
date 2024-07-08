@@ -1,7 +1,7 @@
 package quingine.sim.env.entity.qysics.particle.spring;
 
 import quingine.sim.cam.Quamera;
-import quingine.sim.env.entity.Entity;
+import quingine.sim.env.entity.QollidableQuobject;
 import quingine.sim.env.obj.Quable;
 import quingine.sim.pos.Quisition;
 import quingine.util.win.Quicture;
@@ -10,7 +10,7 @@ import quingine.util.win.Quicture;
  * A blueprint for other types of springs
  */
 
-public class Spring extends Entity {
+public class Spring extends QollidableQuobject {
 
     private double restLength, constant;
     private Quable cable;

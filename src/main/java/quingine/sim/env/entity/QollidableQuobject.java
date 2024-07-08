@@ -1,5 +1,6 @@
 package quingine.sim.env.entity;
 
+import quingine.sim.Math3D;
 import quingine.sim.cam.Quamera;
 import quingine.sim.env.Quworld;
 import quingine.sim.env.obj.Quobject;
@@ -7,7 +8,7 @@ import quingine.sim.pos.Quisition;
 import quingine.util.win.Quicture;
 import quingine.util.win.Quomponent;
 
-import java.awt.*;
+import java.util.ArrayList;
 
 /**
  * An entity can interact more with the environment it is a part of.
@@ -15,7 +16,7 @@ import java.awt.*;
  * Has velocity and acceleration
  */
 
-public class Entity extends Quomponent {
+public class QollidableQuobject extends Quomponent {
 
     private Quobject object;
     private Quisition gravity, velocity, acceleration;
@@ -24,7 +25,7 @@ public class Entity extends Quomponent {
     /**
      * Create a new entity
      */
-    public Entity() {
+    public QollidableQuobject() {
         super();
         velocity = new Quisition();
         acceleration = new Quisition();
@@ -71,6 +72,13 @@ public class Entity extends Quomponent {
         super.setPos(pos);
         if (object != null)
             object.setPos(pos);
+    }
+
+    @Override
+    public void changePosBy(double x, double y, double z){
+        super.changePosBy(x, y, z);
+        if (object != null)
+            object.changePosBy(x, y, z);
     }
 
     /**
@@ -129,6 +137,8 @@ public class Entity extends Quomponent {
      * @param velocity vector in the form of a Quisition.
      */
     public void setVelocity(Quisition velocity){
+        if (velocity.isNaN())
+            return;
         this.velocity.setPos(velocity);
     }
 
@@ -172,6 +182,30 @@ public class Entity extends Quomponent {
         acceleration.add(vector);
     }
 
+    private void updateCollisionListener(Quworld world){
+        ArrayList<Quobject> objects = new ArrayList<>();
+        ArrayList<QollidableQuobject> qollidableObjects = new ArrayList<>();
+        for (int i = 0; i < world.getQuobjects().size() + world.getQollidableQuobjects().size(); i++) {
+            Quobject object;
+            if (i >= world.getQuobjects().size())
+                object = world.getQollidableQuobjects().get(i - world.getQuobjects().size()).getQuobject();
+            else
+                object = world.getQuobjects().get(i);
+            Quisition normal = Math3D.calcNormalDirectionVector(getPos(), object.getPos());
+            Quisition objectPoint = object.getVectorIntersectionPoint(getPos(), normal);
+            normal.multiply(-1);
+            Quisition thisPoint = this.object.getVectorIntersectionPoint(object.getPos(), normal);
+            if (thisPoint == null || objectPoint == null || thisPoint.getDistance(object.getPos()) > objectPoint.getDistance(object.getPos()))
+                continue;
+            if (i >= world.getQuobjects().size())
+                qollidableObjects.add(world.getQollidableQuobjects().get(i - world.getQuobjects().size()));
+            else
+                objects.add(object);
+        }
+        if (qollidableObjects.isEmpty() && objects.isEmpty())
+            return;
+    }
+
     /**
      * Update the position of the particle based off
      * of velocity and acceleration
@@ -180,11 +214,10 @@ public class Entity extends Quomponent {
     public void update(Quworld world){
         //Properly adjust for tick speed
         Quisition vel = new Quisition(velocity);
-        Quisition accel = new Quisition(acceleration);
         Quisition g = new Quisition(getGravity());
         g.divide(world.getQysicSpeed());
         vel.divide(world.getQysicSpeed());
-        velocity.add(accel);
+        velocity.add(acceleration);
         //Update Position
         changePosBy(vel);
         //Gravity
@@ -194,11 +227,13 @@ public class Entity extends Quomponent {
     /**
      * Paint the quobject assigned to the entity
      * @param q this current quicture that is wanting to draw this quomponent.
-     * @param camera
+     * @param camera the thing doing the looking
      */
     @Override
     public void paint(Quicture q, Quamera camera){
-        if (object != null)
+        if (object != null) {
+            object.setPos(getPos());
             object.paint(q, camera);
+        }
     }
 }

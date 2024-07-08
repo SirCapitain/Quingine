@@ -2,11 +2,7 @@ import quingine.sim.cam.Quamera;
 import quingine.sim.env.Quworld;
 import quingine.sim.env.entity.qysics.*;
 import quingine.sim.env.entity.qysics.particle.Quarticle;
-import quingine.sim.env.entity.qysics.particle.liquid.Liquid;
-import quingine.sim.env.entity.qysics.particle.spring.AnchoredBungee;
 import quingine.sim.env.entity.qysics.particle.spring.AnchoredSpring;
-import quingine.sim.env.entity.qysics.particle.spring.LinkedBungee;
-import quingine.sim.env.entity.qysics.particle.spring.LinkedSpring;
 import quingine.sim.env.obj.Quable;
 import quingine.sim.env.obj.Quobject;
 import quingine.sim.env.obj.prism.Qube;
@@ -47,16 +43,22 @@ public class Quingine {
 
         window.setTitle("Quingine 24.5.21");
 
-        world.load("50x50Checkers.quworld");
+//        world.load("15x15Checkers.quworld");
 
 
         Qube cube = new Qube(1, 0, 0 ,3);
-        RigidQysic cubeE = new RigidQysic();
-        cubeE.setPos(0, 0, 3);
-        cubeE.setQuobject(cube);
+//        RigidQysic cubeE = new RigidQysic();
+//        cubeE.setPos(0, 2, 3);
+//        cubeE.setQuobject(cube);
 //        world.add(cubeE);
+        world.add(cube);
         cube.alwaysLit(true);
         cube.debugColors();
+
+        Qube cube2 = new Qube(3, -5, 0 ,3);
+//        world.add(cube2);
+        cube2.alwaysLit(true);
+        cube2.debugColors();
 
 
 
@@ -71,19 +73,33 @@ public class Quingine {
         Quobject sphere = new Quobject("sphere.obj", 0,0,0,1);
         Quarticle particle = new Quarticle();
         particle.setQuobject(sphere);
-        particle.setPos(0,0,3);
-        world.add(particle);
-        particle.setMass(1);
+        particle.setPos(0,0,8);
+//        world.add(particle);
+        particle.setMass(5);
+
+        Quobject s1 = new Quobject("sphere.obj", 0,10,0,1);
+        Quarticle p1 = new Quarticle();
+        p1.setQuobject(s1);
+        p1.setPos(-5,3,3);
+//        world.add(p1);
+        p1.setMass(5);
+
+        Quobject s2 = new Quobject("sphere.obj", 0,1,0,1);
+        Quarticle p2 = new Quarticle();
+        p2.setQuobject(s2);
+        p2.setPos(0,5,3);
+        world.add(p2);
+        p2.setMass(10);
+//        world.setQysicSpeed(1);
 
         Quable cable = new Quable(.5);
 
-        AnchoredSpring spring = new AnchoredSpring(5,10,particle);
-        world.add(spring);
-        spring.setQuobject(cable);
+        AnchoredSpring spring = new AnchoredSpring(2,15,particle);
+//        world.add(spring);
         spring.setPos(0,5,3);
         spring.setCable(cable);
-
         world.startWorldThread();
+
 
         AtomicBoolean down = new AtomicBoolean(false);
 
@@ -95,13 +111,12 @@ public class Quingine {
         cam.setPos(1.762, 1, 1);
         cam.setRotation(.74,-.32,0);
 
-
-        world.addQuworldTickListener(tickSpeed -> {
-
+        world.addQuworldTickListener((tickSpeed, currentTick) -> {
+//            System.out.println(1.5-p2.getPos().y);
             board.setTexture(cam.getNewPicture(picture));
 
             if (!down.get() && window.isKeyDown(KeyEvent.VK_SPACE)) {
-                world.getPlayer().hit(25);
+                world.getPlayer().hit(10);
                 down.set(true);
             }
             if (!down.get() && window.isKeyDown(KeyEvent.VK_B)) {
@@ -120,13 +135,19 @@ public class Quingine {
                 File outputFile = new File("image.png");
                 try {
                     ImageIO.write(cam.getNewPicture(picture), "png", outputFile);
-                }catch (IOException e){}
+                } catch (IOException e) {
+                }
             }
             if (window.isKeyDown(KeyEvent.VK_V))
                 spring.setPos(world.getPlayer().getQuamera().getPos());
+            if (window.isKeyDown(KeyEvent.VK_R))
+                p2.setPos(world.getPlayer().getQuamera().getPos());
+            if (window.isKeyDown(KeyEvent.VK_I))
+                p2.changePosBy(0,0.1,0);
+            if (window.isKeyDown(KeyEvent.VK_K))
+                p2.setPos(0,1.5,3);
 
 //            picture.getQuamera().updateMovement(speed, rotSpeed, window);
-
         });
 
         while(true) {
@@ -135,6 +156,7 @@ public class Quingine {
             } catch (Exception e) {
             }
             picture.getQuamera().updateMovement(speed, rotSpeed, window);
+            cube2.rotate(.01,.01,.01);
         }
     }
 }

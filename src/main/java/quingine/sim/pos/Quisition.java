@@ -1,5 +1,7 @@
 package quingine.sim.pos;
 
+import quingine.sim.Math3D;
+
 /**
  * A position in 3D space
  */
@@ -350,6 +352,15 @@ public class Quisition {
      */
     public double[] getUV(){
         return new double[]{u, v};
+    }
+
+    /**
+     * Normalizes the Quisition.
+     */
+    public void normalize(){
+        divide(Math3D.getMagnitude(this));
+        if (isNaN())
+            setPos(0,0,0);
     }
 
     /**

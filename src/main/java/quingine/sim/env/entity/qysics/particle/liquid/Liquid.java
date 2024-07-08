@@ -1,7 +1,7 @@
 package quingine.sim.env.entity.qysics.particle.liquid;
 
 import quingine.sim.env.Quworld;
-import quingine.sim.env.entity.Entity;
+import quingine.sim.env.entity.QollidableQuobject;
 import quingine.sim.env.entity.qysics.particle.Quarticle;
 import quingine.sim.pos.Quisition;
 
@@ -12,7 +12,7 @@ import quingine.sim.pos.Quisition;
  * a volume of 1m^3 and a size of 1
  */
 
-public class Liquid extends Entity {
+public class Liquid extends QollidableQuobject {
 
     private double density;
 
@@ -48,9 +48,9 @@ public class Liquid extends Entity {
     @Override
     public void update(Quworld world) {
         super.update(world);
-        for (int i = 0; i < world.getEntities().size(); i++){
-            Entity entity = world.getEntities().get(i);
-            if (entity instanceof Quarticle particle) {
+        for (int i = 0; i < world.getQollidableQuobjects().size(); i++){
+            QollidableQuobject qollidableQuobject = world.getQollidableQuobjects().get(i);
+            if (qollidableQuobject instanceof Quarticle particle) {
                 double depth = particle.getPos().y;
                 if (depth >= getPos().y + 1)//Is it in the liquid?
                     return;

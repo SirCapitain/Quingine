@@ -12,6 +12,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -198,7 +199,7 @@ public class Quobject extends Quomponent {
      * <NOTE>ALL VECTORS WHEN SQUARED AND ADDED TOGETHER SHOULD EQUAL 1!</NOTE>
      * @param theta in radians the amount you want to rotate the object by.
      */
-    public void rotate(double vx, double vy, double vz, double theta){
+    public synchronized void rotate(double vx, double vy, double vz, double theta){
         rotate(getPos(), vx, vy, vz, theta);
     }
 
@@ -209,7 +210,7 @@ public class Quobject extends Quomponent {
      * @param pitch radians of rotation on the x-axis
      * @param roll radians of rotation on the z-axis
      */
-    public void rotate(double yaw, double pitch, double roll){
+    public synchronized void rotate(double yaw, double pitch, double roll){
         for (Quisition point : tempPoints)
             Math3D.rotate(point, getPos(), yaw, pitch, roll);
         if (update)
@@ -226,7 +227,7 @@ public class Quobject extends Quomponent {
      * <NOTE>ALL VECTORS WHEN SQUARED AND ADDED TOGETHER SHOULD EQUAL 1!</NOTE>
      * @param theta radians of rotation.
      */
-    public void rotate(Quisition pos, double vx, double vy, double vz, double theta) {
+    public synchronized void rotate(Quisition pos, double vx, double vy, double vz, double theta) {
         for (Quisition point : tempPoints)
             Math3D.rotate(point, pos, vx, vy, vz, theta);
         if (update)
@@ -276,6 +277,25 @@ public class Quobject extends Quomponent {
             point = new Quisition(testPoint);
             point.v = i;
         }
+        if (point.z == Integer.MAX_VALUE)
+            return null;
+        return point;
+    }
+
+    public Quisition getVectorIntersectionPoint(Quisition origin, Quisition vector, boolean dsf){
+        Quisition point = new Quisition(0,0, Integer.MAX_VALUE);
+        Quisition posV = new Quisition(vector);
+        posV.add(origin);
+        for (int i = 0; i < planes.size(); i++) {
+            Qulane plane = planes.get(i);
+            Quisition testPoint = Math3D.getPlaneIntersectionPoint(plane.getPoints(), origin, posV, false);
+            if (testPoint == null || Math3D.getDist(origin, testPoint) >= Math3D.getDist(origin, point))
+                continue;
+            point = new Quisition(testPoint);
+            point.v = i;
+        }
+        if (point.z == Integer.MAX_VALUE)
+            return null;
         return point;
     }
 
@@ -284,7 +304,7 @@ public class Quobject extends Quomponent {
      * @param quisition position in 3D space.
      */
     @Override
-    public void setPos(Quisition quisition){
+    public synchronized void setPos(Quisition quisition){
         setPos(quisition.x, quisition.y, quisition.z);
     }
 
@@ -295,7 +315,7 @@ public class Quobject extends Quomponent {
      * @param z position in 3D space.
      */
     @Override
-    public void setPos(double x, double y, double z){
+    public synchronized void setPos(double x, double y, double z){
         if (points == null){
             super.setPos(x, y, z);
             return;
@@ -317,7 +337,7 @@ public class Quobject extends Quomponent {
      * @param z vector z
      */
     @Override
-    public void changePosBy(double x, double y, double z){
+    public synchronized void changePosBy(double x, double y, double z){
         if (points == null){
             super.changePosBy(x, y, z);
             return;
@@ -431,6 +451,24 @@ public class Quobject extends Quomponent {
         if (update)
             for (int i = 0; i < points.length; i++)
                 points[i].setPos(tempPoints[i]);
+    }
+
+    /**
+     * Check if this quobject is colliding with another
+     * @param object the other quobject to test against.
+     * @return true if colliding, false if not.
+     */
+    public boolean isColliding(Quobject object){
+        Quisition normal = Math3D.calcNormalDirectionVector(getPos(), object.getPos());
+        Quisition objectPoint = object.getVectorIntersectionPoint(getPos(), normal);
+        normal.multiply(-1);
+        Quisition thisPoint = getVectorIntersectionPoint(object.getPos(), normal);
+        if (thisPoint == null || objectPoint == null)
+            return false;
+        if (thisPoint.getDistance(object.getPos()) <= objectPoint.getDistance(object.getPos()))
+            return true;
+        else
+            return false;
     }
 
     /**

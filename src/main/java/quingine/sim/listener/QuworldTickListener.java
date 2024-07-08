@@ -1,5 +1,5 @@
 package quingine.sim.listener;
 
 public interface QuworldTickListener {
-    void tickUpdate(int tickSpeed);
+    void tickUpdate(int tickSpeed, int currentTick);
 }

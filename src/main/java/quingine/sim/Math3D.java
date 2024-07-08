@@ -1,5 +1,6 @@
 package quingine.sim;
 
+import quingine.sim.env.entity.qysics.particle.Quarticle;
 import quingine.sim.pos.Quisition;
 
 import java.util.ArrayList;
@@ -195,6 +196,8 @@ public class Math3D {
     public static Quisition normalize(Quisition pos){
         Quisition normal = new Quisition(pos);
         normal.divide(getMagnitude(pos));
+        if (normal.isNaN())
+            return new Quisition();
         return normal;
     }
 
@@ -289,8 +292,8 @@ public class Math3D {
      * Get the point of intersection of a vector into a plane with a set of points
      * Takes into account if the point is within the points.
      * @param planePoints list of 3 points in 3D space the make a triangle
-     * @param start origin of vector
-     * @param end end of vector
+     * @param start origin of line
+     * @param end end of line
      * @return point of intersection on plane. else null if not within points
      */
     public static Quisition getPlaneIntersectionPoint(Quisition[] planePoints, Quisition start, Quisition end){
@@ -300,7 +303,26 @@ public class Math3D {
         Quisition c = getCrossProduct(point, planePoints[2], planePoints[0]);
         double ab = getDotProduct(a, b);
         double bc = getDotProduct(b, c);
-        if (Double.isInfinite(ab) || Double.isInfinite(bc) || Double.isNaN(ab) || Double.isNaN(bc) || ab < 0 || bc < 0)
+        double ac = getDotProduct(a, c);
+        if (Double.isInfinite(ab) || Double.isInfinite(bc) || Double.isNaN(ab) || Double.isNaN(bc) || ab < 0 || bc < 0 || ac < 0)
+            return null;
+        return point;
+    }
+
+    public static Quisition getPlaneIntersectionPoint(Quisition[] planePoints, Quisition start, Quisition end, boolean sdfsd){
+        Quisition point = getIntersectionPoint(planePoints[0], getCrossProduct(planePoints[1], planePoints[0], planePoints[2]), start, end);
+        Quisition a = getCrossProduct(point, planePoints[0], planePoints[1]);
+        Quisition b = getCrossProduct(point, planePoints[1], planePoints[2]);
+        Quisition c = getCrossProduct(point, planePoints[2], planePoints[0]);
+        double ab = getDotProduct(a, b);
+        double bc = getDotProduct(b, c);
+        double ac = getDotProduct(a, c);
+        System.out.println(point);
+        System.out.println(ab);
+        System.out.println(bc);
+        System.out.println(ac);
+        System.out.println();
+        if (Double.isInfinite(ab) || Double.isInfinite(bc) || Double.isNaN(ab) || Double.isNaN(bc) || ab < 0 || bc < 0 || ac < 0)
             return null;
         return point;
     }
@@ -348,6 +370,47 @@ public class Math3D {
      */
     public static Quisition calcVector(Quisition pos1, Quisition pos2, Quisition pos3){
         return new Quisition((pos2.y - pos1.y)*(pos3.z - pos1.z) - (pos2.z - pos1.z)*(pos3.y - pos1.y), (pos2.z - pos1.z)*(pos3.x - pos1.x) - (pos2.x - pos1.x)*(pos3.z - pos1.z), (pos2.x - pos1.x)*(pos3.y - pos1.y) - (pos2.y - pos1.y)*(pos3.x - pos1.x));
+    }
+
+    /**
+     * Calculate the separating velocity of two particles colliding
+     * @param velocityA vector of first velocity
+     * @param velocityB vector of second velocity (can be null)
+     * @param contactNormal the normal vector of contact
+     * @return Quisition of velocity
+     */
+    public static double calcSeparatingVelocity(Quisition velocityA, Quisition velocityB, Quisition contactNormal){
+        Quisition velocity = new Quisition(velocityA);
+        if (velocityB != null)
+            velocity.subtract(velocityB);
+        return Math3D.getDotProduct(velocity, contactNormal);
+    }
+
+    /**
+     * Get the directional vector from point B to point A
+     * by subtracting point B from point A
+     * @param pointA first Quisition
+     * @param pointB second Quisition
+     * @return new Quisition of the direction between the points
+     */
+    public static Quisition calcDirectionVector(Quisition pointA, Quisition pointB){
+        Quisition r = new Quisition(pointA);
+        r.subtract(pointB);
+        return r;
+    }
+
+    /**
+     * Get the directional normal vector from point B to point A
+     * by subtracting point B from point A then normalizing
+     * @param pointA first Quisition
+     * @param pointB second Quisition
+     * @return new Quisition of the directional normal between the points
+     */
+    public static Quisition calcNormalDirectionVector(Quisition pointA, Quisition pointB){
+        Quisition r = new Quisition(pointA);
+        r.subtract(pointB);
+        r.normalize();
+        return r;
     }
 
     /**

@@ -2,14 +2,13 @@ package quingine.sim.env.entity.qysics;
 
 import quingine.sim.Math3D;
 import quingine.sim.env.Quworld;
-import quingine.sim.env.entity.Entity;
-import quingine.sim.env.obj.Quobject;
+import quingine.sim.env.entity.QollidableQuobject;
 import quingine.sim.pos.Quisition;
 
 /**
  * A rigid body physics simulation that extends from the entity class
  */
-public class RigidQysic extends Entity {
+public class RigidQysic extends QollidableQuobject {
 
     private Quisition rotationVec, velocityVec;
     private double rotSpeed = 0;

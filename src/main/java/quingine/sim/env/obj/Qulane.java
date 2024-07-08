@@ -162,7 +162,7 @@ public class Qulane {
      * @return Quisition with the vectors.
      */
     public Quisition getNormal(){
-        return Math3D.getCrossProduct(points[0], points[1], points[2]);
+        return Math3D.normalize(Math3D.getCrossProduct(points[0], points[1], points[2]));
     }
 
     /**

@@ -12,7 +12,7 @@ import quingine.sim.pos.Quisition;
  * around it
  */
 
-public class Player extends Entity{
+public class Player extends QollidableQuobject {
 
     private Quamera cam;
     private Quworld world;
@@ -42,12 +42,12 @@ public class Player extends Entity{
     public void hit(double force){
         Quisition point = world.getQuameraLookingAt();
         if (point != null){
-            Entity entity = world.getEntities().get((int)point.u);
-            if (entity instanceof RigidQysic qys){
+            QollidableQuobject qollidableQuobject = world.getQollidableQuobjects().get((int)point.u);
+            if (qollidableQuobject instanceof RigidQysic qys){
                 force *= -Math.cos(Math3D.getRadiansBetween(qys.getQuobject().getPlanes().get((int)point.v).getNormal(), cam.getVector()));
                 qys.hit(cam.getPos(), cam.getVector(), force);
                 }
-            else if (entity instanceof Quarticle particle)
+            else if (qollidableQuobject instanceof Quarticle particle)
                 particle.hit(cam.getVector(), force);
             }
     }

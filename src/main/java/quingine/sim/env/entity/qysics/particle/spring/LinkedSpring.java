@@ -58,7 +58,7 @@ public class LinkedSpring extends Spring {
     /**
      * Paint the cable between the particles
      * @param q this current quicture that is wanting to draw this quomponent.
-     * @param camera
+     * @param camera the quamera painting the picture
      */
     @Override
     public void paint(Quicture q, Quamera camera) {

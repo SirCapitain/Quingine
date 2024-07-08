@@ -391,6 +391,8 @@ public class Quicture extends JPanel {
         g.setColor(debugColor);
         g.setFont(debugFont);
         g.drawString("FPS: " + FPS, quindow.getWidth() - 70, 15);
+        if (world != null)
+            g.drawString("TPS: " + world.getCurrentTickSpeed(), quindow.getWidth() - 70, 30);
         g.setFont(font);
 
         if (showCrosshair)

@@ -1,12 +1,9 @@
 package quingine.sim.env;
 
-import quingine.sim.Math3D;
 import quingine.sim.cam.Quamera;
-import quingine.sim.env.entity.Entity;
+import quingine.sim.env.entity.QollidableQuobject;
 import quingine.sim.env.entity.Player;
-import quingine.sim.env.entity.qysics.RigidQysic;
 import quingine.sim.env.light.LightSource;
-import quingine.sim.env.obj.Qulane;
 import quingine.sim.env.obj.Quobject;
 import quingine.sim.listener.QuworldTickListener;
 import quingine.sim.pos.Quisition;
@@ -30,14 +27,16 @@ public class Quworld{
 
     private volatile ArrayList<LightSource> lightSources = new ArrayList<>();
     private volatile ArrayList<Quobject> quobjects = new ArrayList<>();
-    private volatile ArrayList<Entity> entities = new ArrayList<>();
+    private volatile ArrayList<QollidableQuobject> qollidableQuobjects = new ArrayList<>();
 
     private ArrayList<QuworldTickListener> tickListeners = new ArrayList<>();
 
     private int nThreads = 1;
 
-    private int tickSpeed = 50;
-    private int qysicSpeed = 50;
+    private int tickSpeed = 40;
+    private int qysicSpeed = 40;
+    private int currentTick = 0;
+    private int currentTickSpeed = 0;
 
     private Player player;
 
@@ -70,9 +69,9 @@ public class Quworld{
         if (quomponent instanceof LightSource)
             if (!lightSources.contains(quomponent))
                 return lightSources.add((LightSource) quomponent);
-        if (quomponent instanceof Entity)
-            if (!entities.contains(quomponent))
-                return entities.add((Entity) quomponent);
+        if (quomponent instanceof QollidableQuobject)
+            if (!qollidableQuobjects.contains(quomponent))
+                return qollidableQuobjects.add((QollidableQuobject) quomponent);
         return false;
     }
 
@@ -99,8 +98,8 @@ public class Quworld{
             return quobjects.remove(quomponent);
         if (quomponent instanceof LightSource)
             return lightSources.remove(quomponent);
-        if (quomponent instanceof Entity)
-            return entities.remove(quomponent);
+        if (quomponent instanceof QollidableQuobject)
+            return qollidableQuobjects.remove(quomponent);
         return false;
     }
 
@@ -124,8 +123,8 @@ public class Quworld{
      * Get the currten list of entities the quworld currently has
      * @return an arraylist of entities currently in use.
      */
-    public ArrayList<Entity> getEntities(){
-        return entities;
+    public ArrayList<QollidableQuobject> getQollidableQuobjects(){
+        return qollidableQuobjects;
     }
 
     /**
@@ -226,11 +225,23 @@ public class Quworld{
 
     private Thread updateThread = new Thread(() -> {
         long start = System.nanoTime();
+        long startSecond = System.nanoTime();
         while (true){
            if (System.nanoTime() - start >= 1000000000 / tickSpeed) {
                start = System.nanoTime();
                update();
+               currentTick++;
+               long wait = 1000/tickSpeed - (System.nanoTime() - start)/1000000;
+               if (wait > 0)
+                   try {
+                       Thread.sleep(wait);
+                   }catch (Exception e){e.printStackTrace();}
            }
+            if (System.nanoTime() - startSecond >= 1000000000){
+                startSecond = System.nanoTime();
+                currentTickSpeed = currentTick;
+                currentTick = 0;
+            }
        }
     });
 
@@ -245,10 +256,10 @@ public class Quworld{
      * Update the quworld
      */
     public void update(){
-        for (Entity entity : entities)
-            entity.update(this);
+        for (QollidableQuobject qollidableQuobject : qollidableQuobjects)
+            qollidableQuobject.update(this);
         for (QuworldTickListener listener : tickListeners)
-            listener.tickUpdate(tickSpeed);
+            listener.tickUpdate(tickSpeed, currentTick);
 
     }
 
@@ -269,6 +280,10 @@ public class Quworld{
         return player;
     }
 
+    public int getCurrentTickSpeed(){
+        return currentTickSpeed;
+    }
+
     /**
      * Get a where the quamera is looking at based off of
      * all the entities in the world.
@@ -276,11 +291,11 @@ public class Quworld{
      */
     public Quisition getQuameraLookingAt(){
         Quisition point = new Quisition(0,0, Integer.MAX_VALUE);
-        for (int i = 0; i < entities.size(); i++) {
-            if (entities.get(i).getQuobject() == null)
+        for (int i = 0; i < qollidableQuobjects.size(); i++) {
+            if (qollidableQuobjects.get(i).getQuobject() == null)
                 continue;
-            Quisition testPoint = entities.get(i).getQuobject().getVectorIntersectionPoint(player.getQuamera().getPos(), player.getQuamera().getVector());
-            if (testPoint.getDistance(player.getQuamera().getPos()) <= point.getDistance(player.getQuamera().getPos())) {
+            Quisition testPoint = qollidableQuobjects.get(i).getQuobject().getVectorIntersectionPoint(player.getQuamera().getPos(), player.getQuamera().getVector());
+            if (testPoint != null && testPoint.getDistance(player.getQuamera().getPos()) <= point.getDistance(player.getQuamera().getPos())) {
                 point = new Quisition(testPoint);
                 point.u = i;
             }
@@ -316,8 +331,8 @@ public class Quworld{
         for (LightSource ls : lightSources)
             ls.paint(pic, cam);
         //Paint entities outside of threads
-        for (int i = 0; i < entities.size(); i++)
-            entities.get(i).paint(pic, cam);
+        for (int i = 0; i < qollidableQuobjects.size(); i++)
+            qollidableQuobjects.get(i).paint(pic, cam);
         }
 
     }

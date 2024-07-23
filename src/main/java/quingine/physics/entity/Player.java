@@ -70,6 +70,16 @@ public class Player extends QollidableQuobject {
     }
 
     /**
+     * Change the position of the entity by a vector
+     * @param vector quisition has a vector
+     */
+    public void changePosBy(Quisition vector){
+        super.changePosBy(vector);
+        if (cam != null)
+            cam.changePosBy(vector.x, vector.y, vector.z);
+    }
+
+    /**
      * Get the current quamera being used by the player
      * @return current quamera being used
      */

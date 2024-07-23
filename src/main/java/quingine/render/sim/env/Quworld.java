@@ -52,7 +52,7 @@ public class Quworld{
      */
     public Quworld(Quicture q){
         q.setQuworld(this);
-        player = new Player(q.getQuamera());
+        setPlayer(new Player(q.getQuamera()));
         player.setQuworld(this);
     }
 
@@ -270,6 +270,8 @@ public class Quworld{
      */
     public void setPlayer(Player player){
         this.player = player;
+        if (!qollidableQuobjects.contains(player))
+            qollidableQuobjects.add(player);
     }
 
     /**
@@ -305,7 +307,6 @@ public class Quworld{
         return point;
     }
 
-    int i = 0;
     public void paint(Quicture pic, Quamera cam){
         int numThreads = nThreads;
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);

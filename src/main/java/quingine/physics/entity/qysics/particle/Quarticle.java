@@ -185,6 +185,8 @@ public class Quarticle extends QollidableQuobject {
         contact(world);
         super.update(world);
         //Update Velocity
-        getVelocity().multiply(drag);
+        Quisition vel = getVelocity();
+        vel.multiply(drag);
+        setVelocity(vel);
     }
 }

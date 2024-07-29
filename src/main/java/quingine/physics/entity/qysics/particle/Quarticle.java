@@ -1,5 +1,6 @@
 package quingine.physics.entity.qysics.particle;
 
+import quingine.physics.MathPhys;
 import quingine.physics.entity.QollidableQuobject;
 import quingine.render.sim.Math3D;
 import quingine.render.sim.env.Quworld;
@@ -80,6 +81,10 @@ public class Quarticle extends QollidableQuobject {
             return;
         double newSeparatingVelocity = -separatingVelocity * restitution;
 
+        //If particle locked, treat it as a brick wall.
+        if (particle != null && particle.isLocked())
+            particle = null;
+
         //Resolves the resting contact of the particle so that
         //it does not bounce constantly
         Quisition acceleration = new Quisition(getAcceleration());
@@ -93,16 +98,16 @@ public class Quarticle extends QollidableQuobject {
 
         //Calculate the impulse of the collision
         double deltaVelocity = newSeparatingVelocity - separatingVelocity;
-        double massTotal = getMass();
+        double massTotal = 1/getMass();
         if (particle != null)
-            massTotal += particle.getMass();
+            massTotal += 1/particle.getMass();
         double impulse = deltaVelocity / massTotal;
         Quisition impulsePerMass = new Quisition(direction);
         impulsePerMass.multiply(impulse);
 
         //Apply velocity to first particle
         Quisition velocity = new Quisition(getVelocity());
-        impulsePerMass.multiply(getMass());
+        impulsePerMass.divide(getMass());
         velocity.add(impulsePerMass);
         setVelocity(velocity);
 
@@ -110,8 +115,7 @@ public class Quarticle extends QollidableQuobject {
         if (particle == null)
             return;
         velocity = new Quisition(particle.getVelocity());
-        impulsePerMass.divide(getMass());
-        impulsePerMass.multiply(-particle.getMass());
+        impulsePerMass.multiply(getMass()/-particle.getMass());
         velocity.add(impulsePerMass);
         particle.setVelocity(velocity);
     }
@@ -123,57 +127,41 @@ public class Quarticle extends QollidableQuobject {
                     continue;
                 //Determine velocity and direction
                 Quisition direction = Math3D.calcNormalDirectionVector(getPos(), particle.getPos());
-                double separatingVelocity = Math3D.calcSeparatingVelocity(getVelocity(), particle.getVelocity(), direction);
+                double separatingVelocity = MathPhys.calcSeparatingVelocity(getVelocity(), particle.getVelocity(), direction);
                 //Calculate
                 calculateVelocities(separatingVelocity, direction, particle, world.getQysicSpeed());
             }
-        //Quobjects
-        for (Quobject object : world.getQuobjects()) {
-            Quisition contactNormal = Math3D.calcNormalDirectionVector(object.getPos(), getPos());
-            Quisition point = object.getVectorIntersectionPoint(getPos(), contactNormal);
-            if (point == null)
-                continue;
-            Quisition edge = new Quisition(getPos());
-            edge.add(contactNormal);
-            Quisition direction = object.getPlanes().get((int)point.v).getNormal();
-            point = object.getVectorIntersectionPoint(edge, direction);
-            if (point == null || getPos().getDistance(point) > getQuobject().getSize())
-                continue;
-            double separatingVelocity = Math3D.calcSeparatingVelocity(getVelocity(), null, direction);
-            calculateVelocities(separatingVelocity, direction, null, world.getQysicSpeed());
-        }
+        Quisition direction = new Quisition(0,1,0);
+        Quisition ground = new Quisition(getPos().x,-4, getPos().z);
+        if (getPos().getDistance(ground) > getQuobject().getSize())
+            return;
+        double separatingVelocity = MathPhys.calcSeparatingVelocity(getVelocity(), null, direction);
+        calculateVelocities(separatingVelocity, direction, null, world.getQysicSpeed());
     }
 
     private void resolveCollision(Quworld world){
-        for (Quobject object : world.getQuobjects()){
-            //Calculate Collision
-            Quisition contactNormal = Math3D.calcNormalDirectionVector(object.getPos(), getPos());
-            Quisition point = object.getVectorIntersectionPoint(getPos(), contactNormal);
-            if (point == null)
-                continue;
-            Quisition normal = object.getPlanes().get((int)point.v).getNormal();
-            point = object.getVectorIntersectionPoint(getPos(), normal);
-            if (point == null)
-                continue;
-            normal.multiply(-1);
-            Quisition particlePos = new Quisition(getPos());
-            particlePos.add(normal);
-            if (particlePos.getDistance(object.getPos()) > point.getDistance(object.getPos()))
-                continue;
+        for (QollidableQuobject object : world.getQollidableQuobjects()){
             //Calculate Velocity
-            double penetration = point.getDistance(particlePos);
-            Quisition impulsePerMass = new Quisition(normal);
-            impulsePerMass.multiply(-1);
-            impulsePerMass.multiply(penetration / getMass());
-            impulsePerMass.multiply(getMass());
-            changePosBy(impulsePerMass);
-            System.out.println(getPos());
+            double penetration = getPos().getDistance(object.getPos());
+            if (penetration > 1)
+                continue;
+            Quisition contactNormal = Math3D.calcNormalDirectionVector(getPos(), object.getPos());
+            Quisition impulsePerMass = new Quisition(contactNormal);
+            double totalMass = 1/getMass() + 1/object.getMass();
+            impulsePerMass.multiply(contactNormal);
+            impulsePerMass.multiply(penetration / totalMass);
+            impulsePerMass.divide(getMass());
+            if (!isLocked())
+                changePosBy(impulsePerMass);
+            impulsePerMass.multiply(getMass()/object.getMass());
+            if (!object.isLocked())
+                object.changePosBy(impulsePerMass);
         }
     }
 
     private void contact(Quworld world){
-        resolveCollision(world);
         resolveVelocity(world);
+        resolveCollision(world);
     }
 
     /**
@@ -182,6 +170,8 @@ public class Quarticle extends QollidableQuobject {
      */
     @Override
     public void update(Quworld world) {
+        if (isLocked())
+            return;
         contact(world);
         super.update(world);
         //Update Velocity

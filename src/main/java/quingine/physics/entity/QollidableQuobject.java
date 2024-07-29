@@ -21,6 +21,7 @@ public class QollidableQuobject extends Quomponent {
     private Quobject object;
     private Quisition gravity, velocity, acceleration;
     private double mass = 1;
+    private boolean locked = false;
 
     /**
      * Create a new entity
@@ -182,28 +183,20 @@ public class QollidableQuobject extends Quomponent {
         acceleration.add(vector);
     }
 
-    private void updateCollisionListener(Quworld world){
-        ArrayList<Quobject> objects = new ArrayList<>();
-        ArrayList<QollidableQuobject> qollidableObjects = new ArrayList<>();
-        for (int i = 0; i < world.getQuobjects().size() + world.getQollidableQuobjects().size(); i++) {
-            Quobject object;
-            if (i >= world.getQuobjects().size())
-                object = world.getQollidableQuobjects().get(i - world.getQuobjects().size()).getQuobject();
-            else
-                object = world.getQuobjects().get(i);
-            Quisition normal = Math3D.calcNormalDirectionVector(getPos(), object.getPos());
-            Quisition objectPoint = object.getVectorIntersectionPoint(getPos(), normal);
-            normal.multiply(-1);
-            Quisition thisPoint = this.object.getVectorIntersectionPoint(object.getPos(), normal);
-            if (thisPoint == null || objectPoint == null || thisPoint.getDistance(object.getPos()) > objectPoint.getDistance(object.getPos()))
-                continue;
-            if (i >= world.getQuobjects().size())
-                qollidableObjects.add(world.getQollidableQuobjects().get(i - world.getQuobjects().size()));
-            else
-                objects.add(object);
-        }
-        if (qollidableObjects.isEmpty() && objects.isEmpty())
-            return;
+    /**
+     * Locks the object in 3D space. No velocity will change the position.
+     * @param isLocked true -- will stay in place. false -- will move around
+     */
+    public void isLocked(boolean isLocked){
+        locked = isLocked;
+    }
+
+    /**
+     * Locks the object in 3D space. No velocity will change the position.
+     * @return true -- will stay in place. false -- will move around
+     */
+    public boolean isLocked(){
+        return locked;
     }
 
     /**
@@ -219,7 +212,8 @@ public class QollidableQuobject extends Quomponent {
         vel.divide(world.getQysicSpeed());
         velocity.add(acceleration);
         //Update Position
-        changePosBy(vel);
+        if (!locked)
+            changePosBy(vel);
         //Gravity
         setAcceleration(g);
     }

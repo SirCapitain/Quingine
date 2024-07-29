@@ -307,24 +307,6 @@ public class Math3D {
         return point;
     }
 
-    public static Quisition getPlaneIntersectionPoint(Quisition[] planePoints, Quisition start, Quisition end, boolean sdfsd){
-        Quisition point = getIntersectionPoint(planePoints[0], getCrossProduct(planePoints[1], planePoints[0], planePoints[2]), start, end);
-        Quisition a = getCrossProduct(point, planePoints[0], planePoints[1]);
-        Quisition b = getCrossProduct(point, planePoints[1], planePoints[2]);
-        Quisition c = getCrossProduct(point, planePoints[2], planePoints[0]);
-        double ab = getDotProduct(a, b);
-        double bc = getDotProduct(b, c);
-        double ac = getDotProduct(a, c);
-        System.out.println(point);
-        System.out.println(ab);
-        System.out.println(bc);
-        System.out.println(ac);
-        System.out.println();
-        if (Double.isInfinite(ab) || Double.isInfinite(bc) || Double.isNaN(ab) || Double.isNaN(bc) || ab < 0 || bc < 0 || ac < 0)
-            return null;
-        return point;
-    }
-
     /**
      * Takes a list of points in a clips them according the plane specified.
      * @param points list of points that need to be clipped
@@ -364,24 +346,10 @@ public class Math3D {
      * @param pos1 point in 3D space.
      * @param pos2 point in 3D space.
      * @param pos3 point in 3D space.
-     * @return returns a vector in the form of a double[].
+     * @return returns a vector in the form of a Quisition.
      */
     public static Quisition calcVector(Quisition pos1, Quisition pos2, Quisition pos3){
         return new Quisition((pos2.y - pos1.y)*(pos3.z - pos1.z) - (pos2.z - pos1.z)*(pos3.y - pos1.y), (pos2.z - pos1.z)*(pos3.x - pos1.x) - (pos2.x - pos1.x)*(pos3.z - pos1.z), (pos2.x - pos1.x)*(pos3.y - pos1.y) - (pos2.y - pos1.y)*(pos3.x - pos1.x));
-    }
-
-    /**
-     * Calculate the separating velocity of two particles colliding
-     * @param velocityA vector of first velocity
-     * @param velocityB vector of second velocity (can be null)
-     * @param contactNormal the normal vector of contact
-     * @return Quisition of velocity
-     */
-    public static double calcSeparatingVelocity(Quisition velocityA, Quisition velocityB, Quisition contactNormal){
-        Quisition velocity = new Quisition(velocityA);
-        if (velocityB != null)
-            velocity.subtract(velocityB);
-        return Math3D.getDotProduct(velocity, contactNormal);
     }
 
     /**

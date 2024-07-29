@@ -1,20 +1,15 @@
-import quingine.render.sim.cam.Quamera;
 import quingine.render.sim.env.Quworld;
 import quingine.physics.entity.qysics.particle.Quarticle;
 import quingine.physics.entity.qysics.particle.spring.AnchoredSpring;
 import quingine.render.sim.env.light.LightSource;
 import quingine.render.sim.env.obj.Quable;
 import quingine.render.sim.env.obj.Quobject;
-import quingine.render.sim.env.obj.prism.Qube;
 import quingine.render.sim.pos.Quisition;
 import quingine.render.util.win.Quicture;
 import quingine.render.util.win.Quindow;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -31,7 +26,7 @@ public class Quingine {
         picture.setBackgroundColor(Color.BLACK);
         window.setFps(0);
         picture.setPercentResolution(.4);
-        window.setTitle("Quingine 24.7.23");
+        window.setTitle("Quingine 24.7.29");
         world.getPlayer().getQuamera().flashlightOn(false);
         world.getPlayer().setGravity(new Quisition());
 
@@ -46,8 +41,9 @@ public class Quingine {
                 particle.setPos(i*2, -2, j*2);
                 particle.setQuobject(new Quobject("sphere.obj", i, -2, i, 1));
                 world.add(particle);
-                particle.setGravity(new Quisition());
-                particle.setMass(1000);
+//                particle.setGravity(new Quisition());
+//                particle.isLocked(true);
+                particle.setMass(10);
             }
         }
 
@@ -56,13 +52,32 @@ public class Quingine {
         ls.setPos(8,8,8);
         world.add(ls);
 
+        //GRASS
+        Quobject grass = new Quobject("board.obj",0,-4,0,10);
+        grass.rotate(0,0,Math.PI/2);
+        grass.setTexture("grass.png");
+        world.add(grass);
+
         //Particles
         Quarticle particle = new Quarticle();
-        particle.setPos(8, 8, 8);
+        particle.setPos(8.1, 8, 8);
         particle.setQuobject(new Quobject("sphere.obj", 0, 0, 0, 1));
         world.add(particle);
-        particle.setVelocity(new Quisition(0,0,1));
+        particle.setMass(10);
 //        particle.setGravity(new Quisition());
+
+        //Spring
+        Quarticle springParticle = new Quarticle();
+        springParticle.setPos(6.1, 5, 6);
+        springParticle.setQuobject(new Quobject("sphere.obj", 0, 0, 0, 1));
+        world.add(springParticle);
+        springParticle.setMass(10);
+
+        Quable cable = new Quable(1);
+        AnchoredSpring spring = new AnchoredSpring(1,2,springParticle);
+        spring.setCable(cable);
+        world.add(spring);
+        spring.setPos(new Quisition(6.1,6,6));
 
         AtomicBoolean down = new AtomicBoolean(false);
 
@@ -79,6 +94,10 @@ public class Quingine {
             if (!down.get() && window.isKeyDown(KeyEvent.VK_B)) {
                 world.getPlayer().hit(250);
                 down.set(true);
+            }
+            if (window.isKeyDown(KeyEvent.VK_R)) {
+                particle.setPos(picture.getQuamera().getPos());
+                particle.setVelocity(new Quisition());
             }
             if (!window.isKeyDown(KeyEvent.VK_SPACE))
                 down.set(false);

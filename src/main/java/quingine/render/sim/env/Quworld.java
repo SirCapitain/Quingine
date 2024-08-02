@@ -314,10 +314,15 @@ public class Quworld{
             for (int thread = 0; thread < numThreads; thread++) {
                 int threadN = thread;
                 executor.execute(() -> {
-                    int start = threadN * quobjects.size() / numThreads;
-                    int end = (threadN + 1) * quobjects.size() / numThreads;
-                    for (int i = start; i < end; i++) { //Draw only the quobjects assign to it.
+                    int startO = threadN * quobjects.size() / numThreads;
+                    int endO = (threadN + 1) * quobjects.size() / numThreads;
+                    for (int i = startO; i < endO; i++) { //Draw only the quobjects of its cut.
                         quobjects.get(i).paint(pic, cam);
+                    }
+                    int startQ = threadN * qollidableQuobjects.size() / numThreads;
+                    int endQ = (threadN + 1) * qollidableQuobjects.size() / numThreads;
+                    for (int i = startQ; i < endQ; i++) {
+                        qollidableQuobjects.get(i).paint(pic, cam);;
                     }
                 });
             }
@@ -327,14 +332,14 @@ public class Quworld{
             } catch (InterruptedException ie) {
                 ie.printStackTrace();
             }
-        } else //If nThreads = 1
+        } else { //If nThreads = 1
             for (int i = 0; i < quobjects.size(); i++)
                 quobjects.get(i).paint(pic, cam);
+            for (int i = 0; i < qollidableQuobjects.size(); i++)
+                qollidableQuobjects.get(i).paint(pic, cam);
+        }
         for (LightSource ls : lightSources)
             ls.paint(pic, cam);
-        //Paint entities outside of threads
-        for (int i = 0; i < qollidableQuobjects.size(); i++)
-            qollidableQuobjects.get(i).paint(pic, cam);
         }
 
     }

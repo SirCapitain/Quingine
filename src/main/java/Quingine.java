@@ -19,14 +19,14 @@ public class Quingine {
         Quicture picture = new Quicture(window);
         Quworld world = new Quworld(picture);
         window.setSize(800,500);
-        world.setMultiThread(1);
+        world.setMultiThread(2);
 
         picture.setDebugColor(Color.red);
         picture.getQuamera().setDebugColor(Color.red);
         picture.setBackgroundColor(Color.BLACK);
         window.setFps(0);
         picture.setPercentResolution(.4);
-        window.setTitle("Quingine 24.7.29");
+        window.setTitle("Quingine 24.8.2");
         world.getPlayer().getQuamera().flashlightOn(false);
         world.getPlayer().setGravity(new Quisition());
 

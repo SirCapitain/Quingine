@@ -249,9 +249,9 @@ public class Qulane {
             if (image != null)
                 Quaphics.drawImageTri(triangle, camera, image);
             if (fillColor != null && image == null)
-                Quaphics.fillTri(triangle, camera, fillColor, lv);
+                Quaphics.fillTri(triangle, camera, fillColor.getRGB(), lv);
             if (outlineColor != null && image == null)
-                Quaphics.drawPolygon(triangle, camera, outlineColor, lv);
+                Quaphics.drawPolygon(triangle, camera, outlineColor.getRGB(), lv);
         }
     }
 }

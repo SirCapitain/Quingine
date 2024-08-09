@@ -19,14 +19,14 @@ public class Quingine {
         Quicture picture = new Quicture(window);
         Quworld world = new Quworld(picture);
         window.setSize(800,500);
-        world.setMultiThread(2);
+        world.setMultiThread(4);
 
         picture.setDebugColor(Color.red);
         picture.getQuamera().setDebugColor(Color.red);
         picture.setBackgroundColor(Color.BLACK);
         window.setFps(0);
         picture.setPercentResolution(.4);
-        window.setTitle("Quingine 24.8.2");
+        window.setTitle("Quingine 24.8.9");
         world.getPlayer().getQuamera().flashlightOn(false);
         world.getPlayer().setGravity(new Quisition());
 
@@ -39,11 +39,10 @@ public class Quingine {
             for (int j = 0; j < size; j++) {
                 Quarticle particle = new Quarticle();
                 particle.setPos(i*2, -2, j*2);
-                particle.setQuobject(new Quobject("sphere.obj", i, -2, i, 1));
+                particle.setQuobject(new Quobject("sphere.obj", i, 0, i, 1));
                 world.add(particle);
-//                particle.setGravity(new Quisition());
-//                particle.isLocked(true);
-                particle.setMass(10);
+                particle.setMass(Math.random()*10);
+                particle.setRestitution(Math.random());
             }
         }
 
@@ -60,15 +59,14 @@ public class Quingine {
 
         //Particles
         Quarticle particle = new Quarticle();
-        particle.setPos(8.1, 8, 8);
-        particle.setQuobject(new Quobject("sphere.obj", 0, 0, 0, 1));
+        particle.setPos(8, 0, 8);
+        particle.setQuobject(new Quobject("sphere.obj", 0, 3, 0, 1));
         world.add(particle);
         particle.setMass(10);
-//        particle.setGravity(new Quisition());
 
         //Spring
         Quarticle springParticle = new Quarticle();
-        springParticle.setPos(6.1, 5, 6);
+        springParticle.setPos(8, -3, 8);
         springParticle.setQuobject(new Quobject("sphere.obj", 0, 0, 0, 1));
         world.add(springParticle);
         springParticle.setMass(10);
@@ -86,6 +84,8 @@ public class Quingine {
 
         world.startWorldThread();
 
+        world.getPlayer().hasCollision(false);
+
         world.addQuworldTickListener((tickSpeed, currentTick) -> {
             if (!down.get() && window.isKeyDown(KeyEvent.VK_SPACE)) {
                 world.getPlayer().hit(10);
@@ -97,6 +97,7 @@ public class Quingine {
             }
             if (window.isKeyDown(KeyEvent.VK_R)) {
                 particle.setPos(picture.getQuamera().getPos());
+                ls.setPos(picture.getQuamera().getPos());
                 particle.setVelocity(new Quisition());
             }
             if (!window.isKeyDown(KeyEvent.VK_SPACE))
@@ -107,12 +108,15 @@ public class Quingine {
                 world.getPlayer().hit(7);
         });
 
+        world.getPlayer().setMass(1000);
+
         while(true) {
             try {
                 Thread.sleep(10);
             } catch (Exception e) {
             }
             picture.getQuamera().updateMovement(speed, rotSpeed, window);
+            world.getPlayer().setPos(picture.getQuamera().getPos());
         }
     }
 }

@@ -61,8 +61,8 @@ public class Player extends QollidableQuobject {
     @Override
     public void setPos(double x, double y, double z){
         super.setPos(x, y, z);
-        if (cam != null)
-            cam.setPos(x, y, z);
+//        if (cam != null)
+//            cam.setPos(x, y, z);
     }
 
     public void setPos(Quisition pos){

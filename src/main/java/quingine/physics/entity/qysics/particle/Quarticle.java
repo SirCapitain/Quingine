@@ -123,7 +123,7 @@ public class Quarticle extends QollidableQuobject {
     private void resolveVelocity(Quworld world){
         for (QollidableQuobject qollidableQuobject : world.getQollidableQuobjects())
             if (qollidableQuobject instanceof Quarticle particle) {
-                if (particle == this || Math3D.getDist(getPos(), particle.getPos()) > getQuobject().getSize()+particle.getQuobject().getSize())
+                if (particle == this || !particle.hasCollision() || Math3D.getDist(getPos(), particle.getPos()) > getQuobject().getSize()+particle.getQuobject().getSize())
                     continue;
                 //Determine velocity and direction
                 Quisition direction = Math3D.calcNormalDirectionVector(getPos(), particle.getPos());
@@ -141,9 +141,11 @@ public class Quarticle extends QollidableQuobject {
 
     private void resolveCollision(Quworld world){
         for (QollidableQuobject object : world.getQollidableQuobjects()){
+            if (object == this || !object.hasCollision())
+                continue;
             //Calculate Velocity
-            double penetration = getPos().getDistance(object.getPos());
-            if (penetration > 1)
+            double penetration = 2 - getPos().getDistance(object.getPos());
+            if (penetration <= 0)
                 continue;
             Quisition contactNormal = Math3D.calcNormalDirectionVector(getPos(), object.getPos());
             Quisition impulsePerMass = new Quisition(contactNormal);
@@ -153,7 +155,7 @@ public class Quarticle extends QollidableQuobject {
             impulsePerMass.divide(getMass());
             if (!isLocked())
                 changePosBy(impulsePerMass);
-            impulsePerMass.multiply(getMass()/object.getMass());
+            impulsePerMass.multiply(-getMass()/object.getMass());
             if (!object.isLocked())
                 object.changePosBy(impulsePerMass);
         }
@@ -172,7 +174,8 @@ public class Quarticle extends QollidableQuobject {
     public void update(Quworld world) {
         if (isLocked())
             return;
-        contact(world);
+        if (hasCollision())
+            contact(world);
         super.update(world);
         //Update Velocity
         Quisition vel = getVelocity();

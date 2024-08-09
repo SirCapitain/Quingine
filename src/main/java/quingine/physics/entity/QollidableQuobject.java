@@ -22,6 +22,7 @@ public class QollidableQuobject extends Quomponent {
     private Quisition gravity, velocity, acceleration;
     private double mass = 1;
     private boolean locked = false;
+    private boolean hasCollision = true;
 
     /**
      * Create a new entity
@@ -197,6 +198,22 @@ public class QollidableQuobject extends Quomponent {
      */
     public boolean isLocked(){
         return locked;
+    }
+
+    /**
+     * Set whether or not the object has collision.
+     * @param hasCollision false, no collision. true, collides
+     */
+    public void hasCollision(boolean hasCollision){
+        this.hasCollision = hasCollision;
+    }
+
+    /**
+     * Check whether or not the object has collision
+     * @return false, no collision. true, collides
+     */
+    public boolean hasCollision(){
+        return hasCollision;
     }
 
     /**

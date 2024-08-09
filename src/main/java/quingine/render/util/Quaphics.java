@@ -36,15 +36,16 @@ public class Quaphics {
     /**
      * Updates the color to match the current color and brightness
      */
-    public static Color updateColor(Color color, double brightness){
+    private static int updateColor(int color, double brightness){
         //Color
-        int red = (int)Math.round(color.getRed()*(brightness));
-        int green = (int)Math.round(color.getGreen()*(brightness));
-        int blue = (int)Math.round(color.getBlue()*(brightness));
+        int blue = (int)((color & 0xff) * brightness);
+        int green = (int)(((color & 0xff00) >> 8) * brightness);
+        int red = (int)(((color & 0xff0000) >> 16) * brightness);
+        int alpha = (color & 0xff000000) >> 24;
         red = red < minColor ? minColor : Math.min(red, maxColor);
         green = green < minColor ? minColor : Math.min(green, maxColor);
         blue = blue < minColor ? minColor : Math.min(blue, maxColor);
-        return new Color(red, green, blue);
+        return (alpha << 24) | (red << 16) | (green << 8) | blue;
     }
 
     /**
@@ -53,8 +54,8 @@ public class Quaphics {
      * @param points list of Quetexes.
      * @param q the camera to draw on.
      */
-    public static void drawPolygon(Quisition[] points, Quamera q, Color color, double brightness){
-        Color colorN = updateColor(color, brightness);
+    public static void drawPolygon(Quisition[] points, Quamera q, int color, double brightness){
+        color = updateColor(color, brightness);
         for (int i = 0; i < points.length; i++) {
             int j = i == points.length - 1 ? 0 : i + 1;
             if (Double.isNaN(points[i].z) || Double.isNaN(points[j].z))
@@ -74,7 +75,7 @@ public class Quaphics {
                 y1 = y1 < 0 ? 0 : Math.min(y1, q.getHeight());
                 y2 = y2 < 0 ? 0 : Math.min(y2, q.getHeight());
                 for (int y = y1; y != y2; y += yInc)
-                    q.setPixel(x1, y, -1/zEquation[2]*(zEquation[0]*q.getMatrixPosX(x1)+zEquation[1]*q.getMatrixPosY(y)+zEquation[3]), colorN.getRGB());
+                    q.setPixel(x1, y, -1/zEquation[2]*(zEquation[0]*q.getMatrixPosX(x1)+zEquation[1]*q.getMatrixPosY(y)+zEquation[3]), color);
                 continue;
             }
             if (dy == 0) {//Horizontal
@@ -84,7 +85,7 @@ public class Quaphics {
                 x2 = x2 < 0 ? 0 : Math.min(x2, q.getWidth());
 
                 for (int x = x1; x != x2; x += xInc)
-                    q.setPixel(x, y1, -1/zEquation[2]*(zEquation[0]*q.getMatrixPosX(x)+zEquation[1]*q.getMatrixPosY(y1)+zEquation[3]), colorN.getRGB());
+                    q.setPixel(x, y1, -1/zEquation[2]*(zEquation[0]*q.getMatrixPosX(x)+zEquation[1]*q.getMatrixPosY(y1)+zEquation[3]), color);
                 continue;
             }
             double slope = dy / dx;
@@ -94,7 +95,7 @@ public class Quaphics {
                 x2 = x2 < 0 ? 0 : Math.min(x2, q.getWidth());
                 for (int x = x1; x != x2; x += xInc) {
                     double y = x * slope + b;
-                    q.setPixel(x, (int) Math.round(y), -1/zEquation[2]*(zEquation[0]*q.getMatrixPosX(x)+zEquation[1]*q.getMatrixPosY(y)+zEquation[3]), colorN.getRGB());
+                    q.setPixel(x, (int) Math.round(y), -1/zEquation[2]*(zEquation[0]*q.getMatrixPosX(x)+zEquation[1]*q.getMatrixPosY(y)+zEquation[3]), color);
                 }
                 continue;
             }
@@ -103,7 +104,7 @@ public class Quaphics {
                 y2 = y2 < 0 ? 0 : Math.min(y2, q.getHeight());
                 for (int y = y1; y != y2; y+=yInc) {
                     double x = (y-b)/slope;
-                    q.setPixel((int)Math.round(x), y, -1/zEquation[2]*(zEquation[0]*q.getMatrixPosX(x)+zEquation[1]*q.getMatrixPosY(y)+zEquation[3]), colorN.getRGB());
+                    q.setPixel((int)Math.round(x), y, -1/zEquation[2]*(zEquation[0]*q.getMatrixPosX(x)+zEquation[1]*q.getMatrixPosY(y)+zEquation[3]), color);
                 }
             }
         }
@@ -116,8 +117,8 @@ public class Quaphics {
      * @param points list of Quertexes to draw to.
      * @param camera the camera to draw on.
      */
-    public static void fillPolygon(Quisition[] points, Quamera camera, Color color, double brightness) {
-        Color colorN = updateColor(color, brightness);
+    public static void fillPolygon(Quisition[] points, Quamera camera, int color, double brightness) {
+        color = updateColor(color, brightness);
         //Determining the Slope
         double[][] equations = new double[points.length][2];
         int yMax =Integer.MIN_VALUE;
@@ -164,7 +165,7 @@ public class Quaphics {
                 xPoints.set(0, xPoints.get(0) < xMin ? xMin : xPoints.get(0));
                 xPoints.set(1, xPoints.get(1) > xMax ? xMax : xPoints.get(1));
                 for (int x = xPoints.get(0); x <= xPoints.get(1); x++)
-                    camera.setPixel(x, y, -1/zEquation[2]*(zEquation[0]*camera.getMatrixPosX(x)+zEquation[1]*camera.getMatrixPosY(y)+zEquation[3]), colorN.getRGB());
+                    camera.setPixel(x, y, -1/zEquation[2]*(zEquation[0]*camera.getMatrixPosX(x)+zEquation[1]*camera.getMatrixPosY(y)+zEquation[3]), color);
             }
         }
     }
@@ -175,9 +176,9 @@ public class Quaphics {
      * @param vertices points of the triangle
      * @param q the camera that the triangle will be drawn on
      */
-    public static void fillTri(Quisition[] vertices, Quamera q, Color color, double brightness) {
-        Color colorN = updateColor(color, brightness);
+    public static void fillTri(Quisition[] vertices, Quamera q, int color, double brightness) {
             //Draw from top to bottom
+            color = updateColor(color, brightness);
             Quisition[] points = new Quisition[]{vertices[0], vertices[1], vertices[2]};
             if (points[1].y > points[0].y)
                 points = new Quisition[]{points[1], points[0], points[2]};
@@ -185,7 +186,6 @@ public class Quaphics {
                 points = new Quisition[]{points[2], points[0], points[1]};
             if (points[2].y > points[1].y)
                 points = new Quisition[]{points[0], points[2], points[1]};
-
             int x1 = q.getScreenPosX(points[0].x);
             int x2 = q.getScreenPosX(points[1].x);
             int x3 = q.getScreenPosX(points[2].x);
@@ -227,7 +227,7 @@ public class Quaphics {
                     }
                     //draw
                     for (int x = startX; x < endX; x++) {
-                        q.setPixel(x, y, Math3D.calcZ(vertices, q.getMatrixPosX(x), q.getMatrixPosY(y)), colorN.getRGB());
+                        q.setPixel(x, y, Math3D.calcZ(vertices, q.getMatrixPosX(x), q.getMatrixPosY(y)), color);
                     }
                 }
             }

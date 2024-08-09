@@ -25,6 +25,7 @@ public class AnchoredSpring extends Spring {
     public AnchoredSpring(double restLength, double constant, Quarticle particle){
         super(restLength, constant);
         this.particle = particle;
+        isLocked(true);
     }
 
     /**

@@ -37,9 +37,9 @@ Particles: Forces applied to particles and collision of particles
 
 CHANGES MAYBE TO COME! (This is if I don't give up on this project)
 -Math optimizations
--Smoother lighting
+-Better Lighting
 -GPU Acceleration (nah)
--Looking around using the mouse
+-Looking around using the mouse (It's easy, do it yourself)
 -Antialiasing (just bump of the resolution)
 -Even worse naming scheme
 -Pain

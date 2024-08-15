@@ -2,6 +2,8 @@ package quingine.render.util.win;
 
 import quingine.render.sim.cam.Quamera;
 import quingine.render.sim.env.Quworld;
+import quingine.render.sim.pos.Quisition;
+import quingine.render.util.Quaphics;
 
 import javax.swing.*;
 import java.awt.*;

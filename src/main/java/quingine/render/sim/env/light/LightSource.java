@@ -41,20 +41,17 @@ public class LightSource extends Quomponent {
 
     /**
      * Get the light level of a set of points, particularly 3.
-     * @param points points that are an object
-     * @return Typically a number from -1 to 1 indicating amount of light touching it.
+     * @param point a point in space.
+     * @param normal direction at which the point is facing
+     * Set the light value onto the position; typically a number from -1 to 1 indicating amount of light touching it.
      */
-    public double getLightLevel(Quisition[] points){
-        Quisition[] newPoints = new Quisition[points.length];
-        for (int i = 0; i < points.length; i++) {
-            Quisition p = new Quisition(points[i]);
-            p.subtract(getPos());
-            newPoints[i] = p;
-        }
-        Quisition point = Math3D.getCrossProduct(points[0], points[1], points[2]);
-        Quisition direction = new Quisition(getPos());
-        direction.subtract(points[0]);
-        return power * (Math3D.getDotProduct(Math3D.normalize(direction), Math3D.normalize(point))/Math3D.getMagnitude(newPoints[0]));
+    public double getLightLevel(Quisition point, Quisition normal){
+         Quisition newPoint = new Quisition(point);
+         newPoint.subtract(getPos());
+         Quisition direction = new Quisition(getPos());
+         direction.subtract(point);
+         direction.normalize();
+         return power * Math3D.getDotProduct(direction, normal)/(Math3D.getMagnitude(newPoint));
     }
 
     /**

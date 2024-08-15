@@ -11,6 +11,8 @@ public class Quisition {
     public double w, x, y, z;
     public double u, v;
 
+    public double lv = 1;
+
 
     /**
      * Not a fun way to make a point but it is a fast way.

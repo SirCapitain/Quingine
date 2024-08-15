@@ -22,27 +22,18 @@ public class QuiangularQuism extends Quobject {
      * @param y center position of rectangular prism in 3D world
      * @param z center position of rectangular prism in 3D world
      */
-    public QuiangularQuism(double width, double height, double depth, double x, double y, double z){
-        super(new Quisition[]{new Quisition(x, y + height*.5, z),
-                new Quisition(x-width*.5, y-height*.5,z+depth*.5),
-                new Quisition(x-width*.5, y-height*.5,z-depth*.5),
-                new Quisition(x+width*.5, y-height*.5,z-depth*.5),
-                new Quisition(x+width*.5, y-height*.5,z+depth*.5)}, x, y, z);
-        addPlane(new int[]{4,1,2});//Bottom
-        addPlane(new int[]{4,2,3});
-
-        addPlane(new int[]{2,0,3});//Front
-        addPlane(new int[]{1,0,2});//Left
-        addPlane(new int[]{3,0,4});//Right
-        addPlane(new int[]{4,0,1});//Back
-    }
-    public void debugColors(){
-        fill(true);
-        setPlaneColor(BOTTOM, Color.magenta);
-        setPlaneColor(BOTTOM+1, Color.magenta);
-        setPlaneColor(LEFT, Color.blue);
-        setPlaneColor(RIGHT, Color.yellow);
-        setPlaneColor(BACK, Color.green);
-        setPlaneColor(FRONT, Color.red);
+    public QuiangularQuism(double width, double height, double depth, double x, double y, double z) {
+        super(new Quisition[]{new Quisition(x, y + height * .5, z),
+                new Quisition(x - width * .5, y - height * .5, z + depth * .5),
+                new Quisition(x - width * .5, y - height * .5, z - depth * .5),
+                new Quisition(x + width * .5, y - height * .5, z - depth * .5),
+                new Quisition(x + width * .5, y - height * .5, z + depth * .5)}, x, y, z);
+        setFaces(new int[][]{
+                new int[]{4, 1, 2},//Bottom
+                new int[]{4, 2, 3},
+                new int[]{2, 0, 3},//Front
+                new int[]{1, 0, 2},//Left
+                new int[]{3, 0, 4},//Right
+                new int[]{4, 0, 1}});//Back
     }
 }

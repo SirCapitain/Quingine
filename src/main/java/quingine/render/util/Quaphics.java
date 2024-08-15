@@ -176,9 +176,10 @@ public class Quaphics {
      * @param vertices points of the triangle
      * @param q the camera that the triangle will be drawn on
      */
-    public static void fillTri(Quisition[] vertices, Quamera q, int color, double brightness) {
+    public static void fillTri(Quisition[] vertices, Quamera q, int color) {
             //Draw from top to bottom
-            color = updateColor(color, brightness);
+            Quisition[] nv = new Quisition[]{new Quisition(q.getScreenPosX(vertices[0].x), q.getScreenPosY(vertices[0].y), vertices[0].lv),new Quisition(q.getScreenPosX(vertices[1].x), q.getScreenPosY(vertices[1].y), vertices[1].lv),new Quisition(q.getScreenPosX(vertices[2].x), q.getScreenPosY(vertices[2].y), vertices[2].lv)};
+            double[] lightMap = Math3D.getPlane(nv);
             Quisition[] points = new Quisition[]{vertices[0], vertices[1], vertices[2]};
             if (points[1].y > points[0].y)
                 points = new Quisition[]{points[1], points[0], points[2]};
@@ -227,7 +228,9 @@ public class Quaphics {
                     }
                     //draw
                     for (int x = startX; x < endX; x++) {
-                        q.setPixel(x, y, Math3D.calcZ(vertices, q.getMatrixPosX(x), q.getMatrixPosY(y)), color);
+                        double lv = -1/lightMap[2]*(lightMap[0]*x+lightMap[1]*y+lightMap[3]);
+                        int colorN = updateColor(color, lv);
+                        q.setPixel(x, y, Math3D.calcZ(vertices, q.getMatrixPosX(x), q.getMatrixPosY(y)), colorN);
                     }
                 }
             }
@@ -241,6 +244,8 @@ public class Quaphics {
      * @param image the image to be drawn
      */
     public static void drawImageTri(Quisition[] vertices, Quamera q, BufferedImage image){
+        Quisition[] nv = new Quisition[]{new Quisition(q.getScreenPosX(vertices[0].x), q.getScreenPosY(vertices[0].y), vertices[0].lv),new Quisition(q.getScreenPosX(vertices[1].x), q.getScreenPosY(vertices[1].y), vertices[1].lv),new Quisition(q.getScreenPosX(vertices[2].x), q.getScreenPosY(vertices[2].y), vertices[2].lv)};
+        double[] lightMap = Math3D.getPlane(nv);
         //Draw from top to bottom.
         Quisition[] points = new Quisition[]{vertices[0], vertices[1], vertices[2]};
         if (points[1].y > points[0].y)
@@ -358,7 +363,10 @@ public class Quaphics {
                     texX = Math.max(texX, 0);
                     texY = Math.max(texY, 0);
 
-                    q.setPixel(x, y, zz*(zEquation[0]*q.getMatrixPosX(x)+yz+zEquation[3]), imageData[texY*imageWidth + texX]);
+                    double lv = -1/lightMap[2]*(lightMap[0]*x+lightMap[1]*y+lightMap[3]);
+                    int colorN = updateColor(imageData[texY*imageWidth + texX], lv);
+
+                    q.setPixel(x, y, zz*(zEquation[0]*q.getMatrixPosX(x)+yz+zEquation[3]), colorN);
 
                     t += texStep;
                 }

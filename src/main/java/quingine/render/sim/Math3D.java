@@ -263,10 +263,20 @@ public class Math3D {
     /**
      * Get the plane equation of a set of points
      * @param points list of points in 3D space
-     * @return a double[] in the form of ax, by, cz, d
+     * @return a double[] in the form of {ax, by, cz, d}
      */
     public static double[] getPlane(Quisition[] points){
         Quisition vec = calcVector(points[0], points[1], points[2]);
+        return new double[]{vec.x, vec.y, vec.z, -getDotProduct(vec, points[0])};
+    }
+
+    /**
+     * Get the light map of a set of 3 points on the xy plane
+     * @param points set of points on the xy plane with individual light levels
+     * @return a double[] in the form of {ax, by, cz, d}
+     */
+    public static double[] get2DLightMap(Quisition[] points){
+        Quisition vec = new Quisition((points[1].y - points[0].y)*(points[2].lv - points[0].lv) - (points[1].lv - points[0].lv)*(points[2].y - points[0].y), (points[1].lv - points[0].lv)*(points[2].x - points[0].x) - (points[1].x - points[0].x)*(points[2].lv - points[0].lv), (points[1].x - points[0].x)*(points[2].y - points[0].y) - (points[1].y - points[0].y)*(points[2].x - points[0].x));
         return new double[]{vec.x, vec.y, vec.z, -getDotProduct(vec, points[0])};
     }
 
@@ -283,7 +293,9 @@ public class Math3D {
         point.subtract(end);
         double d = getDotProduct(planeNormal, planePos);
         double t = (d - getDotProduct(planeNormal, end)) / getDotProduct(planeNormal, point);
-        return new Quisition(end.x + point.x*t, end.y + point.y*t, end.z + point.z*t, end.w + point.w*t, end.getUV()[0] + (start.getUV()[0] - end.getUV()[0])*t, end.getUV()[1] + (start.getUV()[1] - end.getUV()[1])*t);
+        Quisition intPoint = new Quisition(end.x + point.x*t, end.y + point.y*t, end.z + point.z*t, end.w + point.w*t, end.getUV()[0] + (start.getUV()[0] - end.getUV()[0])*t, end.getUV()[1] + (start.getUV()[1] - end.getUV()[1])*t);
+        intPoint.lv = end.lv + (start.lv - end.lv)*t;
+        return intPoint;
     }
 
     /**

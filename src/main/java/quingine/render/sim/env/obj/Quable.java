@@ -66,8 +66,9 @@ public class Quable extends Qube {
             else
                 points[i].add(vecB);
         }
+
         int[] planes = new int[]{1,0,3,1,3,2,4,5,6,4,6,7,5,0,1,5,1,6,7,2,3,7,3,4,4,3,0,4,0,5,6,1,2,6,2,7};
         for (int i = 0; i < planes.length; i+=3)
-            Qulane.paint(pic, camera, null, new Quisition[]{points[planes[i]], points[planes[i+1]], points[planes[i+2]]}, null, true, Color.BLUE, Color.BLACK);
+            paintPlane(pic, camera,new Quisition[]{points[planes[i]], points[planes[i+1]], points[planes[i+2]]}, null);
     }
 }

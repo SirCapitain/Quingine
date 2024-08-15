@@ -2,6 +2,7 @@ package quingine.render.sim.env.obj;
 
 import quingine.render.sim.cam.Quamera;
 import quingine.render.sim.pos.Quisition;
+import quingine.render.util.Quaphics;
 import quingine.render.util.win.Quicture;
 import quingine.render.util.win.Quomponent;
 import quingine.render.sim.Math3D;
@@ -12,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -29,13 +31,20 @@ public class Quobject extends Quomponent {
     private String objectFile;
 
     private Quisition[] points;
+    private Quisition[][] faces;
     private Quisition[] tempPoints;
-    private ArrayList<Qulane> planes = new ArrayList<>();
+
+    private double[][] texPoints;
+    private double[][][] texFaces;
 
     private boolean update = true;
 
     private boolean fill = true;
     private boolean outline = false;
+    private boolean alwaysLit = false;
+
+    private int fillColor = Color.white.getRGB();
+    private int outlineColor = Color.black.getRGB();
 
     /**
      * Initializing using this will default all values to 0.
@@ -91,9 +100,8 @@ public class Quobject extends Quomponent {
         super(x, y, z);
         this.objectFile = objectFile;
         this.size = size;
-        fill(false);
         ArrayList<Quisition> points = new ArrayList<>();
-        ArrayList<Quisition> texturePoints = new ArrayList<>();
+        ArrayList<Double> texturePoints = new ArrayList<>();
         ArrayList<Integer> faces = new ArrayList<>();
         ArrayList<Integer> textureFaces = new ArrayList<>();
         File object =  new File(System.getProperty("user.dir") + "/src/main/resources/objects/" + objectFile);
@@ -104,8 +112,10 @@ public class Quobject extends Quomponent {
                 switch (data) {
                     case "v" ->
                             points.add(new Quisition(Double.parseDouble(reader.next()) * size + x, Double.parseDouble(reader.next()) * size + y, Double.parseDouble(reader.next()) * size + z));
-                    case "vt" ->
-                            texturePoints.add(new Quisition(0, 0, 0, 0, Double.parseDouble(reader.next()), Double.parseDouble(reader.next())));
+                    case "vt" ->{
+                        texturePoints.add(Double.parseDouble(reader.next()));
+                        texturePoints.add(Double.parseDouble(reader.next()));
+                    }
                     case "f" -> {
                         for (int i = 0; i < 3; i++) {
                             data = reader.next();
@@ -119,15 +129,9 @@ public class Quobject extends Quomponent {
                 }
             }
             setPoints(points);
-            for (int i = 0; i < faces.size() / 3; i++){
-                addPlane(new Qulane(new Quisition[]{this.points[faces.get(i*3)], this.points[faces.get(i*3+1)], this.points[faces.get(i*3+2)]}));
-                if (!texturePoints.isEmpty()){
-                    Quisition[] texPoints = new Quisition[3];
-                    for (int j = 0; j < 3; j++)
-                        texPoints[j] = new Quisition(0,0,0, 0,texturePoints.get(textureFaces.get(i*3+j)).u, texturePoints.get(textureFaces.get(i*3+j)).v);
-                    planes.get(i).setTexturePoints(texPoints);
-                }
-            }
+            setFaces(faces);
+            setTexturePoints(texturePoints);
+            setTextureFaces(textureFaces);
         }catch (Exception e){e.printStackTrace();}
     }
 
@@ -182,7 +186,7 @@ public class Quobject extends Quomponent {
      * based on an arraylist
      * @param points arraylist<Quisition>
      */
-    public void setPoints(ArrayList<Quisition> points){
+    public void setPoints(ArrayList<Quisition> points) {
         this.points = new Quisition[points.size()];
         tempPoints = new Quisition[points.size()];
         points.toArray(this.points);
@@ -196,6 +200,35 @@ public class Quobject extends Quomponent {
      */
     public Quisition[] getPoints(){
         return points;
+    }
+
+    public void setFaces(int[][] faces){
+        this.faces = new Quisition[faces.length][3];
+        for (int i = 0; i < this.faces.length; i++)
+            for (int j = 0; j < faces[i].length; j++)
+                this.faces[i][j] = points[faces[i][j]];
+    }
+
+    public void setFaces(ArrayList<Integer> faces){
+        this.faces = new Quisition[faces.size()/3][3];
+        for (int i = 0; i < this.faces.length; i++)
+            for (int j = 0; j < this.faces[i].length; j++)
+                this.faces[i][j] = points[faces.get(j+i*this.faces[i].length)];
+    }
+
+    public void setTexturePoints(ArrayList<Double> points){
+        texPoints = new double[points.size()][2];
+        for (int i = 0; i < texPoints.length/2; i++) {
+            texPoints[i][0] = points.get(i*2);
+            texPoints[i][1] = points.get(i*2+1);
+        }
+    }
+
+    public void setTextureFaces(ArrayList<Integer> faces){
+        texFaces = new double[faces.size()/3][3][2];
+        for (int i = 0; i < texFaces.length; i++)
+            for (int j = 0; j < texFaces[i].length; j++)
+                texFaces[i][j] = texPoints[faces.get(j + i * this.texFaces[i].length)];
     }
 
     /**
@@ -243,29 +276,6 @@ public class Quobject extends Quomponent {
     }
 
     /**
-     * Add a binding plane to the object. This will act like a face
-     * for the object.
-     * @param points The points you want the plane to bind to. e.g. If you want to bind a face to a cube,
-     *               the list of points for one face would be {0, 1, 2, 3} (The position of that points on
-     *               the stored list of points for the object)
-     */
-    public void addPlane(int[] points){
-        Quisition[] planePoints = new Quisition[points.length];
-        for (int i = 0; i < points.length; i++)
-            planePoints[i] = this.points[points[i]];
-        planes.add(new Qulane(planePoints));
-    }
-
-    /**
-     * Add an existing binding plane
-     * @param plane a BindingPlane
-     */
-    public void addPlane(Qulane plane){
-        if (!planes.contains(plane))
-            planes.add(plane);
-    }
-
-    /**
      * Get the point on a quobject where a vector intersects
      * @param origin where the vector came from
      * @param vector where the vector is going (the vector itself)
@@ -276,9 +286,10 @@ public class Quobject extends Quomponent {
         Quisition point = new Quisition(0,0, Integer.MAX_VALUE);
         Quisition posV = new Quisition(vector);
         posV.add(origin);
-        for (int i = 0; i < planes.size(); i++) {
-            Qulane plane = planes.get(i);
-            Quisition testPoint = Math3D.getPlaneIntersectionPoint(plane.getPoints(), origin, posV);
+        Quisition[] points;
+        for (int i = 0; i < faces.length; i++) {
+            points = faces[i];
+            Quisition testPoint = Math3D.getPlaneIntersectionPoint(points, origin, posV);
             if (testPoint == null || Math3D.getDist(origin, testPoint) >= Math3D.getDist(origin, point))
                 continue;
             point = new Quisition(testPoint);
@@ -293,9 +304,10 @@ public class Quobject extends Quomponent {
         Quisition point = new Quisition(0,0, Integer.MAX_VALUE);
         Quisition posV = new Quisition(vector);
         posV.add(origin);
-        for (int i = 0; i < planes.size(); i++) {
-            Qulane plane = planes.get(i);
-            Quisition testPoint = Math3D.getPlaneIntersectionPoint(plane.getPoints(), origin, posV);
+        Quisition[] points;
+        for (int i = 0; i < faces.length; i++) {
+            points = faces[i];
+            Quisition testPoint = Math3D.getPlaneIntersectionPoint(points, origin, posV);
             if (testPoint == null || Math3D.getDist(origin, testPoint) >= Math3D.getDist(origin, point))
                 continue;
             point = new Quisition(testPoint);
@@ -359,31 +371,12 @@ public class Quobject extends Quomponent {
     }
 
     /**
-     * Get the current list of binding planes for this object.
-     * @return the current list of binding planes.
-     */
-    public ArrayList<Qulane> getPlanes(){
-        return planes;
-    }
-
-    /**
-     * Set the color of one of the planes.
-     * @param plane the position of that plane on the list of planes.
-     * @param color what color you want that plane to be
-     */
-    public void setPlaneColor(int plane, Color color){
-        planes.get(plane).setColor(color);
-    }
-
-    /**
      * Do you want the object to fill with color?
      * This sets all binding planes fill to true
      * @param fill true for fill false for empty
      */
     public void fill(boolean fill){
         this.fill = fill;
-            for (Qulane plane : planes)
-                plane.fill(fill);
     }
 
     /**
@@ -401,8 +394,6 @@ public class Quobject extends Quomponent {
      */
     public void outline(boolean outline){
         this.outline = outline;
-        for (Qulane plane : planes)
-            plane.outline(outline);
     }
 
     /**
@@ -417,18 +408,16 @@ public class Quobject extends Quomponent {
      * Set the color of every binding plane
      * @param color color you want the quobject to be
      */
-    public void setFullColor(Color color){
-        for (Qulane plane : getPlanes())
-            plane.setColor(color);
+    public void setFullColor(int color){
+        fillColor = color;
     }
 
     /**
      * Set every face on the quobject to have the same outline color
      * @param color the color you want to outline the quobject in
      */
-    public void setFullOutlineColor(Color color){
-        for (Qulane plane : getPlanes())
-            plane.setOutlineColor(color);
+    public void setFullOutlineColor(int color){
+        outlineColor = color;
     }
 
     /**
@@ -436,16 +425,15 @@ public class Quobject extends Quomponent {
      * @param alwaysLit true if all are lit, false if not.
      */
     public void alwaysLit(boolean alwaysLit){
-        for (Qulane plane : getPlanes())
-            plane.alwaysLit(alwaysLit);
+        this.alwaysLit = alwaysLit;
     }
 
     /**
-     * Set random colors for every face on the quobject
+     * Check whether or not the object is always lit.
+     * @return true, always lit; false, it's not... come on man, use your head. It's simple.
      */
-    public void randomColors(){
-        for (Qulane plane : planes)
-            plane.setColor(new Color((int)(Math.random()*255), (int)(Math.random()*255), (int)(Math.random()*255)));
+    public boolean alwaysLit(){
+        return alwaysLit;
     }
 
     /**
@@ -479,15 +467,89 @@ public class Quobject extends Quomponent {
     }
 
     /**
-     * Painting all of the binding planes.
+     * Paint the quobject.  yum
      * @param pic this current quicture that is wanting to draw this quomponent.
+     * @param camera the current quamera looking at this.
      */
 
     @Override
     public void paint(Quicture pic, Quamera camera) {
         updateComponents(false);
-        for (Qulane plane : planes)
-            plane.paint(pic, camera, texture);
+        for (int i = 0; i < faces.length; i++) {
+            double[][] texturePoints;
+            if (texPoints != null && texFaces != null)
+                texturePoints = texFaces[i];
+            else
+                texturePoints = null;
+            paintPlane(pic, camera, faces[i], texturePoints);
+        }
         updateComponents(true);
+    }
+
+    /**
+     * Paint a 2D plane based off of points
+     * @param pic this current quicture that is wanting to draw this quomponent.
+     * @param camera the current quamera looking at this.
+     * @param points the points of the plane
+     * @param texturePoints the UV points of the texture.
+     */
+    public void paintPlane(Quicture pic, Quamera camera, Quisition[] points, double[][] texturePoints){
+        int num = 0;
+        for (int i = 0; i < points.length; i++) {
+            points[i].lv = 0; //also reset light level
+            if (points[i].getDistance(camera.getPos()) > camera.getzFar())
+                num++;
+        }
+        if (num == points.length)
+            return;
+
+        //Lighting
+        if (!alwaysLit){
+            for (int i = 0; i < pic.getWorld().getLightSources().size(); i++) {
+                Quisition normal = Math3D.normalize(Math3D.getCrossProduct(points[0], points[1], points[2]));
+                for (int j = 0; j < points.length; j++)
+                    points[j].lv += (pic.getWorld().getLightSources().get(i)).getLightLevel(points[j], normal) / pic.getWorld().getLightSources().size();
+            }
+        }else
+            for (int i = 0; i < points.length; i++)
+                points[i].lv = 1;
+        //Translate Points
+        Quisition[] newPoints = new Quisition[points.length];
+        for (int i = 0; i < points.length; i++) {
+            newPoints[i] = camera.translate(points[i]);
+            if (texturePoints != null)
+                newPoints[i].setUV(texturePoints[i][0], texturePoints[i][1]);
+            newPoints[i].lv = points[i].lv;
+        }
+
+        //Check if face is visible to camera
+        if(!camera.pointsAreVisible(newPoints))
+            return;
+
+        //Clip objects on frustum near plane
+        ArrayList<Quisition[]> triangles = camera.clipZPlanes(newPoints);
+        if (triangles == null)
+            return;
+
+        //Change to perspective
+        for (Quisition[] pos : triangles)
+            for (int j = 0; j < pos.length; j++)
+                pos[j] = camera.perspective(pos[j]);
+
+        //Clip on screen edges
+        triangles = camera.clipScreenEdges(triangles);
+        if (triangles == null)
+            return;
+
+
+        //Draw
+        for (Quisition[] triangle : triangles) {
+            if (texture != null)
+                Quaphics.drawImageTri(triangle, camera, texture);
+            if (fill && texture == null)
+                Quaphics.fillTri(triangle, camera, fillColor);
+            if (outline && texture == null)
+                Quaphics.drawPolygon(triangle, camera, outlineColor,1);
+        }
     }
 }

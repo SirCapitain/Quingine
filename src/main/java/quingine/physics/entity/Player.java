@@ -44,7 +44,7 @@ public class Player extends QollidableQuobject {
         if (point != null){
             QollidableQuobject qollidableQuobject = world.getQollidableQuobjects().get((int)point.u);
             if (qollidableQuobject instanceof RigidQysic qys){
-                force *= -Math.cos(Math3D.getRadiansBetween(qys.getQuobject().getPlanes().get((int)point.v).getNormal(), cam.getVector()));
+//                force *= -Math.cos(Math3D.getRadiansBetween(qys.getQuobject().getPlanes().get((int)point.v).getNormal(), cam.getVector()));
                 qys.hit(cam.getPos(), cam.getVector(), force);
                 }
             else if (qollidableQuobject instanceof Quarticle particle)

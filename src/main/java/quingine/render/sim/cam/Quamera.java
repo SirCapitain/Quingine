@@ -3,6 +3,7 @@ package quingine.render.sim.cam;
 import quingine.render.sim.env.Quworld;
 import quingine.render.sim.pos.Quisition;
 import quingine.render.sim.Math3D;
+import quingine.render.util.Quaphics;
 import quingine.render.util.win.Quicture;
 import quingine.render.util.win.Quindow;
 
@@ -27,9 +28,6 @@ public class Quamera {
     private double fov = Math.PI * .5;
     private double zFar = 1000;
     private double zNear = .001;
-
-    private double lightPower = 1;
-    private boolean flashlightOn = true;
 
     private boolean debug = true;
     private Font debugFont = new Font(Font.DIALOG, Font.PLAIN, 10);
@@ -472,50 +470,6 @@ public class Quamera {
     }
 
     /**
-     * Set the quamera to have a flashlight on or off
-     * @param flashlightOn true for on, false for off
-     */
-    public void flashlightOn(boolean flashlightOn){
-        this.flashlightOn = flashlightOn;
-    }
-
-    /**
-     * Check if the quamera has the flashlight on
-     * @return true if on, false if off.
-     */
-    public boolean flashlightOn(){
-        return flashlightOn;
-    }
-
-
-    /**
-     * Set how powerful the flashlight is. 1 is default
-     * @param power amount of power
-     */
-    public void setLightPower(double power){
-        lightPower = power;
-    }
-
-    /**
-     * returns the current about of power being used for the flashlight
-     * @return current about of power
-     */
-    public double getLightPower(){
-        return lightPower;
-    }
-
-    /**
-     * Get the current light level of a set of points
-     * @param point the point that needs to be lit.
-     * @return a value from 0 - 1 for the current light level.
-     */
-    public synchronized double getLightLevel(Quisition point){
-        if (!flashlightOn)
-            return 0;//                               The current light direction                          Current position of the point
-        return Math3D.getDotProduct(Math3D.normalize( new Quisition(0,0,1)), Math3D.normalize(new Quisition(point.x,point.y,1))) * lightPower;
-    }
-
-    /**
      * Test if a set of points are visible to the quamera.
      * This used vectors, so it matters the order of the points in the array
      * This does not check for visibility from behind, too close, or too far from the
@@ -607,6 +561,7 @@ public class Quamera {
                 (height/(double)width)*(newPos.x/Math.tan(fov*.5))*newPos.w,
                 (newPos.y/(Math.tan(fov*.5)))*newPos.w,
                 (newPos.z*(zFar/(zFar-zNear)) - (zFar*zNear)/(zFar-zNear))*newPos.w);
+        newPos.lv = pos.lv;
         return newPos;
     }
 

@@ -216,6 +216,10 @@ public class Quobject extends Quomponent {
                 this.faces[i][j] = points[faces.get(j+i*this.faces[i].length)];
     }
 
+    public Quisition[][] getFaces(){
+        return faces;
+    }
+
     public void setTexturePoints(ArrayList<Double> points){
         texPoints = new double[points.size()][2];
         for (int i = 0; i < texPoints.length/2; i++) {
@@ -229,6 +233,10 @@ public class Quobject extends Quomponent {
         for (int i = 0; i < texFaces.length; i++)
             for (int j = 0; j < texFaces[i].length; j++)
                 texFaces[i][j] = texPoints[faces.get(j + i * this.texFaces[i].length)];
+    }
+
+    public Quisition getNormal(int face){
+        return Math3D.getNormal(faces[face]);
     }
 
     /**
@@ -295,25 +303,7 @@ public class Quobject extends Quomponent {
             point = new Quisition(testPoint);
             point.v = i;
         }
-        if (point.z == Integer.MAX_VALUE)
-            return null;
-        return point;
-    }
-
-    public Quisition getVectorIntersectionPoint(Quisition origin, Quisition vector, boolean dsf){
-        Quisition point = new Quisition(0,0, Integer.MAX_VALUE);
-        Quisition posV = new Quisition(vector);
-        posV.add(origin);
-        Quisition[] points;
-        for (int i = 0; i < faces.length; i++) {
-            points = faces[i];
-            Quisition testPoint = Math3D.getPlaneIntersectionPoint(points, origin, posV);
-            if (testPoint == null || Math3D.getDist(origin, testPoint) >= Math3D.getDist(origin, point))
-                continue;
-            point = new Quisition(testPoint);
-            point.v = i;
-        }
-        if (point.z == Integer.MAX_VALUE)
+        if (point.z == Integer.MAX_VALUE || Math3D.getRadiansBetween(Math3D.getNormal(getFaces()[(int)point.v]), vector) >= Math.PI/4)
             return null;
         return point;
     }

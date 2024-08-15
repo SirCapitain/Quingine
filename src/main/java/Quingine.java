@@ -1,3 +1,4 @@
+import quingine.render.sim.Math3D;
 import quingine.render.sim.cam.Quamera;
 import quingine.render.sim.env.Quworld;
 import quingine.physics.entity.qysics.particle.Quarticle;
@@ -14,8 +15,6 @@ import quingine.render.util.win.Quindow;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -32,7 +31,7 @@ public class Quingine {
         picture.setBackgroundColor(Color.BLACK);
         window.setFps(0);
         picture.setPercentResolution(.4);
-        window.setTitle("Quingine 24.8.14");
+        window.setTitle("Quingine 24.8.15");
         world.getPlayer().setGravity(new Quisition());
 
 //        world.load("15x15Checkers.quworld");
@@ -45,15 +44,12 @@ public class Quingine {
             for (int j = 0; j < size; j++) {
                 Quarticle particle = new Quarticle();
                 particle.setPos(i*2, -2, j*2);
-                particle.setQuobject(new Quobject("cube.obj", i, 0, i, 1));
+                particle.setQuobject(new Quobject("sphere.obj", i, 0, i, 1));
                 world.add(particle);
                 particle.setMass(Math.random()*10);
                 particle.setRestitution(Math.random());
             }
         }
-
-        QuectangularQuism rect = new QuectangularQuism(5,1,5,0,0,0);
-        world.add(rect);
 
         //Light
         LightSource ls = new LightSource();
@@ -61,7 +57,7 @@ public class Quingine {
         world.add(ls);
 
         LightSource ls2 = new LightSource();
-        ls2.setPos(0,8,0);
+        ls2.setPos(0,-2,0);
         world.add(ls2);
 
         Qube cube = new Qube(1,0,0,0);
@@ -122,7 +118,8 @@ public class Quingine {
         world.getPlayer().hasCollision(false);
 
         world.addQuworldTickListener((tickSpeed, currentTick) -> {
-            board.setTexture(boardCam.getNewPicture(picture));
+            if (currentTick % 5 == 0)
+                board.setTexture(boardCam.getNewPicture(picture));
             cube.setPos(ls.getPos());
             cube2.setPos(ls2.getPos());
             if (!down.get() && window.isKeyDown(KeyEvent.VK_SPACE)) {

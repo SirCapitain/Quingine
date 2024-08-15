@@ -157,6 +157,10 @@ public class Math3D {
         return new Quisition(vec1.y*vec2.z - vec1.z*vec2.y, vec1.z*vec2.x - vec1.x*vec2.z, vec1.x*vec2.y - vec1.y*vec2.x);
     }
 
+    public static Quisition getNormal(Quisition[] points){
+        return normalize(getCrossProduct(points[1], points[0], points[2]));
+    }
+
     /**
      * Get the dot product of two vectors
      * @param vec1 first vector

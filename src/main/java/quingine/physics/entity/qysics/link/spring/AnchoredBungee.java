@@ -1,4 +1,4 @@
-package quingine.physics.entity.qysics.particle.spring;
+package quingine.physics.entity.qysics.link.spring;
 
 import quingine.render.sim.Math3D;
 import quingine.render.sim.env.Quworld;

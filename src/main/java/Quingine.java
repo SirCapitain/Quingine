@@ -1,18 +1,16 @@
-import quingine.render.sim.Math3D;
+import quingine.physics.entity.qysics.link.cable.Quable;
+import quingine.physics.entity.qysics.link.cable.Rod;
 import quingine.render.sim.cam.Quamera;
 import quingine.render.sim.env.Quworld;
 import quingine.physics.entity.qysics.particle.Quarticle;
-import quingine.physics.entity.qysics.particle.spring.AnchoredSpring;
 import quingine.render.sim.env.light.LightSource;
-import quingine.render.sim.env.obj.Quable;
+import quingine.render.sim.env.obj.ExtendableQuism;
 import quingine.render.sim.env.obj.Quobject;
 import quingine.render.sim.env.obj.prism.Qube;
-import quingine.render.sim.env.obj.prism.QuectangularQuism;
 import quingine.render.sim.pos.Quisition;
 import quingine.render.util.win.Quicture;
 import quingine.render.util.win.Quindow;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,7 +29,7 @@ public class Quingine {
         picture.setBackgroundColor(Color.BLACK);
         window.setFps(0);
         picture.setPercentResolution(.4);
-        window.setTitle("Quingine 24.8.15");
+        window.setTitle("Quingine 24.8.19");
         world.getPlayer().setGravity(new Quisition());
 
 //        world.load("15x15Checkers.quworld");
@@ -48,6 +46,7 @@ public class Quingine {
                 world.add(particle);
                 particle.setMass(Math.random()*10);
                 particle.setRestitution(Math.random());
+//                particle.isLocked(true);
             }
         }
 
@@ -91,22 +90,28 @@ public class Quingine {
         world.add(particle);
         particle.setMass(10);
 
-        //Spring
-        Quarticle springParticle = new Quarticle();
-        springParticle.setPos(8, 0, 8);
-        springParticle.setQuobject(new Quobject("sphere.obj", 0, 0, 0, 1));
-        world.add(springParticle);
-        springParticle.setMass(10);
+        //Cable
+        Quarticle particleA = new Quarticle();
+        particleA.setPos(5, 0, 8);
+        particleA.setQuobject(new Quobject("sphere.obj", 0, 0, 0, 1));
+        world.add(particleA);
+        particleA.setMass(10);
 
-        Quable cable = new Quable(1);
-        cable.setFullColor(Color.blue.getRGB());
-        cable.outline(true);
-        cable.alwaysLit(true);
-        AnchoredSpring spring = new AnchoredSpring(1,20,springParticle);
-        spring.setCable(cable);
-        world.add(spring);
-        spring.setPos(new Quisition(6,6,6));
+        Quarticle particleB = new Quarticle();
+        particleB.setPos(5, 0, 0.9);
+        particleB.setQuobject(new Quobject("sphere.obj", 0, 0, 0, 1));
+        world.add(particleB);
+        particleB.getQuobject().setFullColor(Color.red.getRGB());
+        particleB.setMass(10);
 
+        ExtendableQuism eq = new ExtendableQuism(1);
+        eq.setFullColor(Color.blue.getRGB());
+        eq.outline(true);
+        eq.alwaysLit(true);
+
+        Rod cable = new Rod(particleA, particleB);
+        cable.setQuobject(eq);
+        world.add(cable);
 
         AtomicBoolean down = new AtomicBoolean(false);
 
@@ -118,16 +123,15 @@ public class Quingine {
         world.getPlayer().hasCollision(false);
 
         world.addQuworldTickListener((tickSpeed, currentTick) -> {
-            if (currentTick % 5 == 0)
-                board.setTexture(boardCam.getNewPicture(picture));
             cube.setPos(ls.getPos());
             cube2.setPos(ls2.getPos());
+            if (currentTick % 7 == 0)
+                board.setTexture(boardCam.getNewPicture(picture));
             if (!down.get() && window.isKeyDown(KeyEvent.VK_SPACE)) {
                 world.getPlayer().hit(10);
                 down.set(true);
             }
             if (!down.get() && window.isKeyDown(KeyEvent.VK_B)) {
-                ls2.setPos(picture.getQuamera().getPos());
                 world.getPlayer().hit(250);
                 down.set(true);
             }

@@ -1,4 +1,4 @@
-package quingine.physics.entity.qysics.particle.liquid;
+package quingine.physics.entity.qysics.liquid;
 
 import quingine.render.sim.env.Quworld;
 import quingine.physics.entity.QollidableQuobject;

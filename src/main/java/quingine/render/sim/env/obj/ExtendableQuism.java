@@ -5,14 +5,12 @@ import quingine.render.sim.env.obj.prism.Qube;
 import quingine.render.sim.pos.Quisition;
 import quingine.render.util.win.Quicture;
 
-import java.awt.*;
-
 /**
- * A cable that connects two points with
+ * A quism that connects two points with
  * a rectangular prism.
  */
 
-public class Quable extends Qube {
+public class ExtendableQuism extends Qube {
 
     private Quisition pointA, pointB;
 
@@ -21,7 +19,7 @@ public class Quable extends Qube {
      * to make it look like a cable.
      * @param size the size of the cable
      */
-    public Quable(double size){
+    public ExtendableQuism(double size){
         super(size,0,0,0);
     }
 

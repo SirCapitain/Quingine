@@ -1,8 +1,8 @@
-package quingine.physics.entity.qysics.particle.spring;
+package quingine.physics.entity.qysics.link.spring;
 
 import quingine.physics.entity.QollidableQuobject;
 import quingine.render.sim.cam.Quamera;
-import quingine.render.sim.env.obj.Quable;
+import quingine.render.sim.env.obj.ExtendableQuism;
 import quingine.render.sim.pos.Quisition;
 import quingine.render.util.win.Quicture;
 
@@ -13,7 +13,7 @@ import quingine.render.util.win.Quicture;
 public class Spring extends QollidableQuobject {
 
     private double restLength, constant;
-    private Quable cable;
+    private ExtendableQuism cable;
 
     /**
      * Something springy
@@ -51,18 +51,18 @@ public class Spring extends QollidableQuobject {
 
     /**
      * Set the cable that will be the spring.
-     * @param cable a Quable
+     * @param cable a ExtendableQuism
      */
-    public void setCable(Quable cable){
+    public void setCable(ExtendableQuism cable){
         this.cable = cable;
         setQuobject(cable);
     }
 
     /**
      * Get the current cable in use
-     * @return the Quable in use.
+     * @return the ExtendableQuism in use.
      */
-    public Quable getCable(){
+    public ExtendableQuism getCable(){
         return cable;
     }
 

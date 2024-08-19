@@ -1,10 +1,8 @@
 package quingine.physics.entity.qysics.particle;
 
-import quingine.physics.MathPhys;
 import quingine.physics.entity.QollidableQuobject;
 import quingine.render.sim.Math3D;
 import quingine.render.sim.env.Quworld;
-import quingine.render.sim.env.obj.Quobject;
 import quingine.render.sim.pos.Quisition;
 
 /**
@@ -76,94 +74,19 @@ public class Quarticle extends QollidableQuobject {
         return restitution;
     }
 
-    private void calculateVelocities(double separatingVelocity, Quisition direction, Quarticle particle, double duration){
-        if (separatingVelocity > 0)//Is it moving away or not moving at all?
-            return;
-        double newSeparatingVelocity = -separatingVelocity * restitution;
-
-        //If particle locked, treat it as a brick wall.
-        if (particle != null && particle.isLocked())
-            particle = null;
-
-        //Resolves the resting contact of the particle so that
-        //it does not bounce constantly
-        Quisition acceleration = new Quisition(getAcceleration());
-        if (particle != null)
-            acceleration.subtract(particle.getAcceleration());
-        double separatingAccel = Math3D.getDotProduct(direction, acceleration);
-        if (separatingAccel < 0){
-            newSeparatingVelocity += restitution * separatingAccel;
-            newSeparatingVelocity = Math.max(newSeparatingVelocity, 0);
-        }
-
-        //Calculate the impulse of the collision
-        double deltaVelocity = newSeparatingVelocity - separatingVelocity;
-        double massTotal = 1/getMass();
-        if (particle != null)
-            massTotal += 1/particle.getMass();
-        double impulse = deltaVelocity / massTotal;
-        Quisition impulsePerMass = new Quisition(direction);
-        impulsePerMass.multiply(impulse);
-
-        //Apply velocity to first particle
-        Quisition velocity = new Quisition(getVelocity());
-        impulsePerMass.divide(getMass());
-        velocity.add(impulsePerMass);
-        setVelocity(velocity);
-
-        //Apply velocity to second particle
-        if (particle == null)
-            return;
-        velocity = new Quisition(particle.getVelocity());
-        impulsePerMass.multiply(getMass()/-particle.getMass());
-        velocity.add(impulsePerMass);
-        particle.setVelocity(velocity);
-    }
-
-    private void resolveVelocity(Quworld world){
-        for (QollidableQuobject qollidableQuobject : world.getQollidableQuobjects())
-            if (qollidableQuobject instanceof Quarticle particle) {
-                if (particle == this || !particle.hasCollision() || Math3D.getDist(getPos(), particle.getPos()) > getQuobject().getSize()+particle.getQuobject().getSize())
-                    continue;
-                //Determine velocity and direction
-                Quisition direction = Math3D.calcNormalDirectionVector(getPos(), particle.getPos());
-                double separatingVelocity = MathPhys.calcSeparatingVelocity(getVelocity(), particle.getVelocity(), direction);
-                //Calculate
-                calculateVelocities(separatingVelocity, direction, particle, world.getQysicSpeed());
-            }
-        Quisition direction = new Quisition(0,1,0);
-        Quisition ground = new Quisition(getPos().x,-4, getPos().z);
-        if (getPos().getDistance(ground) > getQuobject().getSize())
-            return;
-        double separatingVelocity = MathPhys.calcSeparatingVelocity(getVelocity(), null, direction);
-        calculateVelocities(separatingVelocity, direction, null, world.getQysicSpeed());
-    }
-
-    private void resolveCollision(Quworld world){
-        for (QollidableQuobject object : world.getQollidableQuobjects()){
-            if (object == this || !object.hasCollision())
-                continue;
-            //Calculate Velocity
-            double penetration = 2 - getPos().getDistance(object.getPos());
-            if (penetration <= 0)
-                continue;
-            Quisition contactNormal = Math3D.calcNormalDirectionVector(getPos(), object.getPos());
-            Quisition impulsePerMass = new Quisition(contactNormal);
-            double totalMass = 1/getMass() + 1/object.getMass();
-            impulsePerMass.multiply(contactNormal);
-            impulsePerMass.multiply(penetration / totalMass);
-            impulsePerMass.divide(getMass());
-            if (!isLocked())
-                changePosBy(impulsePerMass);
-            impulsePerMass.multiply(-getMass()/object.getMass());
-            if (!object.isLocked())
-                object.changePosBy(impulsePerMass);
-        }
-    }
-
+    /**
+     * Update the particle on how contacting works. They tend to forget every time.
+     * @param world the current quworld holding all the goodies like QollidableQuobjects
+     */
     private void contact(Quworld world){
-        resolveVelocity(world);
-        resolveCollision(world);
+        ContactGenerator.resolveWall(new Quisition(0,1,0), new Quisition(0,-4,0), this, getRestitution());
+        for (QollidableQuobject obj : world.getQollidableQuobjects())
+            if (obj instanceof Quarticle particle) {
+                if (particle == this)
+                    continue;
+                ContactGenerator.resolveVelocity(this, particle, particle.getRestitution());
+                ContactGenerator.resolveCollision(this, particle, Math3D.calcNormalDirectionVector(this.getPos(), particle.getPos()),getQuobject().getSize() + particle.getQuobject().getSize() - getPos().getDistance(particle.getPos()));
+            }
     }
 
     /**

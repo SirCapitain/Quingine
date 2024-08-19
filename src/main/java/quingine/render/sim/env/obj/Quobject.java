@@ -202,6 +202,10 @@ public class Quobject extends Quomponent {
         return points;
     }
 
+    /**
+     * Sets all the planes of the quobject based off of the points already set.
+     * @param faces 2D-Array of integers that correspond to the points of the quobject
+     */
     public void setFaces(int[][] faces){
         this.faces = new Quisition[faces.length][3];
         for (int i = 0; i < this.faces.length; i++)
@@ -209,6 +213,11 @@ public class Quobject extends Quomponent {
                 this.faces[i][j] = points[faces[i][j]];
     }
 
+    /**
+     * Sets all the planes of the quobject based off of the points already set.
+     * @param faces 1D Arraylist of integers that correspond to the points of the quobject.
+     *              Each face is 3 points. e.g. {0,4,1,5,2,1} A plane with points 0, 4, 1 is made and another with points 5, 2, 1
+     */
     public void setFaces(ArrayList<Integer> faces){
         this.faces = new Quisition[faces.size()/3][3];
         for (int i = 0; i < this.faces.length; i++)
@@ -216,10 +225,31 @@ public class Quobject extends Quomponent {
                 this.faces[i][j] = points[faces.get(j+i*this.faces[i].length)];
     }
 
+    /**
+     * Get all the faces the quobject currently has.
+     * @return a 2D array of Quisitions that are organized by face.
+     */
     public Quisition[][] getFaces(){
         return faces;
     }
 
+    /**
+     * Set the list of UV coordinates for the quobject.
+     * @param points 2D array e.g. {{u,v},{u2,v2}}
+     */
+    public void setTexturePoints(Double[][] points){
+        texPoints = new double[points.length][2];
+        for (int i = 0; i < texPoints.length/2; i++) {
+            texPoints[i][0] = points[i][0];
+            texPoints[i][1] = points[i][1];
+        }
+    }
+
+    /**
+     * Set the texture points based off an arraylist
+     * @param points a 1D arraylist where it alternates u, v
+     *               e.g. {u, v, u2, v2}
+     */
     public void setTexturePoints(ArrayList<Double> points){
         texPoints = new double[points.size()][2];
         for (int i = 0; i < texPoints.length/2; i++) {
@@ -228,6 +258,24 @@ public class Quobject extends Quomponent {
         }
     }
 
+    /**
+     * Set the what faces use what texture points.
+     * @param faces 2D array of integers that correspond to
+     *              the UV coordinates already set in the quobject.
+     */
+    public void setTextureFaces(int[][] faces){
+        texFaces = new double[faces.length][3][2];
+        for (int i = 0; i < texFaces.length; i++)
+            for (int j = 0; j < texFaces[i].length; j++)
+                texFaces[i][j] = texPoints[faces[i][j]];
+    }
+
+    /**
+     * Set the what faces use what texture points.
+     * @param faces 1D arrayList of integers that correspond to
+     *              the UV coordinates already set in the quobject.
+     *              Each face used 3 points at a time.
+     */
     public void setTextureFaces(ArrayList<Integer> faces){
         texFaces = new double[faces.size()/3][3][2];
         for (int i = 0; i < texFaces.length; i++)
@@ -235,6 +283,11 @@ public class Quobject extends Quomponent {
                 texFaces[i][j] = texPoints[faces.get(j + i * this.texFaces[i].length)];
     }
 
+    /**
+     * Get the normal vector of any face of the quobject
+     * @param face integer the corresponds to a face in the list.
+     * @return a Quisition that is the normal vector
+     */
     public Quisition getNormal(int face){
         return Math3D.getNormal(faces[face]);
     }

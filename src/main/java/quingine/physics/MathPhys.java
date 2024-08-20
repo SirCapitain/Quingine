@@ -18,7 +18,9 @@ public class MathPhys {
      * @return Quisition of velocity
      */
     public static double calcSeparatingVelocity(Quisition velocityA, Quisition velocityB, Quisition contactNormal){
-        Quisition velocity = new Quisition(velocityA);
+        Quisition velocity = new Quisition();
+        if (velocityA != null)
+            velocity.add(velocityA);
         if (velocityB != null)
             velocity.subtract(velocityB);
         return Math3D.getDotProduct(velocity, contactNormal);

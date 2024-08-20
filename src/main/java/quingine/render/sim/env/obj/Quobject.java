@@ -30,6 +30,10 @@ public class Quobject extends Quomponent {
     private String textureFile;
     private String objectFile;
 
+    private double yaw = 0;
+    private double pitch = 0;
+    private double roll = 0;
+
     private Quisition[] points;
     private Quisition[][] faces;
     private Quisition[] tempPoints;
@@ -98,8 +102,16 @@ public class Quobject extends Quomponent {
      */
     public Quobject(String objectFile, double x, double y, double z, double size){
         super(x, y, z);
-        this.objectFile = objectFile;
         this.size = size;
+        loadQuobjectFile(objectFile);
+    }
+
+    /**
+     * Set the object file to load
+     * @param objectFile fileName.obj
+     */
+    public void loadQuobjectFile(String objectFile){
+        this.objectFile = objectFile;
         ArrayList<Quisition> points = new ArrayList<>();
         ArrayList<Double> texturePoints = new ArrayList<>();
         ArrayList<Integer> faces = new ArrayList<>();
@@ -111,7 +123,7 @@ public class Quobject extends Quomponent {
                 String data = reader.next();
                 switch (data) {
                     case "v" ->
-                            points.add(new Quisition(Double.parseDouble(reader.next()) * size + x, Double.parseDouble(reader.next()) * size + y, Double.parseDouble(reader.next()) * size + z));
+                            points.add(new Quisition(Double.parseDouble(reader.next()) * size + getPos().x, Double.parseDouble(reader.next()) * size + getPos().y, Double.parseDouble(reader.next()) * size + getPos().z));
                     case "vt" ->{
                         texturePoints.add(Double.parseDouble(reader.next()));
                         texturePoints.add(Double.parseDouble(reader.next()));
@@ -140,6 +152,8 @@ public class Quobject extends Quomponent {
      * @param file name of the file with extension.
      */
     public void setTexture(String file){
+        if (file == null || file.equals("null"))
+            return;
         fill(false);
         try {
             BufferedImage image = ImageIO.read(new File(System.getProperty("user.dir") + "/src/main/resources/textures/" + file));
@@ -312,6 +326,9 @@ public class Quobject extends Quomponent {
      * @param roll radians of rotation on the z-axis
      */
     public synchronized void rotate(double yaw, double pitch, double roll){
+        this.yaw += yaw;
+        this.pitch += pitch;
+        this.roll += roll;
         for (Quisition point : tempPoints)
             Math3D.rotate(point, getPos(), yaw, pitch, roll);
         if (update)
@@ -507,6 +524,26 @@ public class Quobject extends Quomponent {
             return true;
         else
             return false;
+    }
+
+    /**
+     * Reload the quobject.
+     */
+    public void reload(){
+        loadQuobjectFile(objectFile);
+        yaw = 0;
+        pitch = 0;
+        roll = 0;
+    }
+
+    /**
+     * Get the current yaw, pitch, roll of the quobject
+     * Does not properly represent the rotation properly
+     * because it does not include rotation by vector
+     * @return new double[]{yaw, pitch, roll}
+     */
+    public double[] getRotation(){
+        return new double[]{yaw, pitch, roll};
     }
 
     /**

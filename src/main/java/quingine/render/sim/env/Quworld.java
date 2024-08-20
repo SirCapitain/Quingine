@@ -1,5 +1,8 @@
 package quingine.render.sim.env;
 
+import quingine.physics.entity.qysics.link.cable.Quable;
+import quingine.physics.entity.qysics.link.spring.Spring;
+import quingine.physics.entity.qysics.particle.Quarticle;
 import quingine.render.sim.cam.Quamera;
 import quingine.physics.entity.QollidableQuobject;
 import quingine.physics.entity.Player;
@@ -147,7 +150,7 @@ public class Quworld{
     }
 
     /**
-     * Save the current quworld as an untitled.quworld in resources/quworlds/output
+     * Save the current quworld as an test.quworld in resources/quworlds/output
      */
     public void save(){
         try {
@@ -155,7 +158,27 @@ public class Quworld{
             FileWriter writer = new FileWriter(file);
             for (Quobject object : quobjects) {
                 Quisition pos = object.getPos();
-                writer.write(object.getObjectFile() + " " + pos.x + " " + pos.y + " " + pos.z + " " + object.getSize() + " " + object.getTextureFile() + "\n");
+                double[] rot = object.getRotation();
+                writer.write("q " + object.getObjectFile() + " " + pos.x + " " + pos.y + " " + pos.z + " " + object.getSize() + " " + object.getTextureFile() + " " + rot[0] + " " + rot[1] + " " + rot[2] + "\n");
+            }
+            for (QollidableQuobject object : qollidableQuobjects) {
+                Quisition pos = object.getPos();
+                String objectFile = "null";
+                double size = 1;
+                String textureFile = "null";
+                if (object.getQuobject() != null) {
+                    objectFile = object.getQuobject().getObjectFile();
+                    size = object.getQuobject().getSize();
+                    textureFile = object.getQuobject().getTextureFile();
+                }
+                if (object instanceof Quarticle particle)
+                    writer.write("p " + objectFile + " " + pos.x + " " + pos.y + " " + pos.z + " " + size + " " + textureFile + " " + particle.getMass() + " " + particle.getRestitution() + " " + particle.getDrag() + "\n");
+                else
+                    writer.write("p " + objectFile + " " + pos.x + " " + pos.y + " " + pos.z + " " + size + " " + textureFile + " " + object.getMass() + "\n");
+            }
+            for (LightSource object : lightSources) {
+                Quisition pos = object.getPos();
+                writer.write("ls " + pos.x + " " + pos.y + " " + pos.z + " " + object.getPower() + "\n");
             }
             System.out.println("SAVED!");
             writer.close();
@@ -176,10 +199,36 @@ public class Quworld{
         File object =  new File(System.getProperty("user.dir") + "/src/main/resources/quworlds/" + quworld);
         try {
             Scanner reader = new Scanner(object);
+            String file;
+            String str;
             while (reader.hasNext()) {
-                Quobject obj = new Quobject(reader.next(), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()));
-                obj.setTexture(reader.next());
-                add(obj);
+                str = reader.next();
+                if (str.equals("q")){
+                    file = reader.next();
+                    if (file.equals("null"))
+                        continue;
+                    Quobject obj = new Quobject(file, Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()));
+                    obj.setTexture(reader.next());
+                    obj.alwaysLit(true);
+                    obj.rotate(Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()));
+                    add(obj);
+                }
+                else if (str.equals("p")){
+                    file = reader.next();
+                    if (file.equals("null"))
+                        continue;
+                    Quarticle particle = new Quarticle(file, Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()));
+                    particle.getQuobject().setTexture(reader.next());
+                    particle.setMass(Double.parseDouble(reader.next()));
+                    particle.setRestitution(Double.parseDouble(reader.next()));
+                    particle.setDrag(Double.parseDouble(reader.next()));
+                    add(particle);
+                }
+                else if (str.equals("ls")){
+                    LightSource ls = new LightSource(Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()));
+                    ls.setPower(Double.parseDouble(reader.next()));
+                    add(ls);
+                }
             }
         }catch (IOException io){
             io.printStackTrace();

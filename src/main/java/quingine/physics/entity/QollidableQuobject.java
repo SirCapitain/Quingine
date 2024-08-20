@@ -34,6 +34,15 @@ public class QollidableQuobject extends Quomponent {
         gravity = new Quisition();
     }
 
+    public QollidableQuobject(String objectFile, double x, double y, double z, double size){
+        super();
+        velocity = new Quisition();
+        acceleration = new Quisition();
+        gravity = new Quisition();
+        setQuobject(new Quobject(objectFile, 0,0, 0, size));
+        setPos(x, y, z);
+    }
+
     /**
      * Set the current quobject that
      * will be a part of the entity

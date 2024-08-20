@@ -1,4 +1,4 @@
-package quingine.render.sim.env.obj;
+package quingine.render.sim.env.obj.prism;
 
 import quingine.render.sim.cam.Quamera;
 import quingine.render.sim.env.obj.prism.Qube;

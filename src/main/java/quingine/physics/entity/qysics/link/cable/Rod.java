@@ -3,7 +3,6 @@ package quingine.physics.entity.qysics.link.cable;
 import quingine.physics.MathPhys;
 import quingine.physics.entity.QollidableQuobject;
 import quingine.physics.entity.qysics.particle.ContactGenerator;
-import quingine.physics.entity.qysics.particle.Quarticle;
 import quingine.render.sim.Math3D;
 import quingine.render.sim.env.Quworld;
 import quingine.render.sim.pos.Quisition;

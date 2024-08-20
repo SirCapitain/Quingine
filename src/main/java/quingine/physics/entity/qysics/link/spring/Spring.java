@@ -2,9 +2,11 @@ package quingine.physics.entity.qysics.link.spring;
 
 import quingine.physics.entity.QollidableQuobject;
 import quingine.render.sim.cam.Quamera;
-import quingine.render.sim.env.obj.ExtendableQuism;
+import quingine.render.sim.env.obj.prism.ExtendableQuism;
 import quingine.render.sim.pos.Quisition;
 import quingine.render.util.win.Quicture;
+
+import java.awt.*;
 
 /**
  * A blueprint for other types of springs
@@ -23,6 +25,11 @@ public class Spring extends QollidableQuobject {
     public Spring(double restLength, double constant){
         setRestLength(restLength);
         setConstant(constant);
+        ExtendableQuism e = new ExtendableQuism(.5);
+        e.setFullColor(Color.blue.getRGB());
+        e.outline(true);
+        e.alwaysLit(true);
+        setQuobject(e);
     }
 
     /**

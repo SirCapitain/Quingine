@@ -6,9 +6,11 @@ import quingine.physics.entity.qysics.particle.ContactGenerator;
 import quingine.render.sim.Math3D;
 import quingine.render.sim.cam.Quamera;
 import quingine.render.sim.env.Quworld;
-import quingine.render.sim.env.obj.ExtendableQuism;
+import quingine.render.sim.env.obj.prism.ExtendableQuism;
 import quingine.render.sim.pos.Quisition;
 import quingine.render.util.win.Quicture;
+
+import java.awt.*;
 
 /**
  * Links two QollidableQuobjects together with a stiff cable!
@@ -19,7 +21,7 @@ public class Quable extends QollidableQuobject {
     protected QollidableQuobject particleA;
     protected QollidableQuobject particleB;
     private double maxLength = 7;
-    private double restitution = .5;
+    private double restitution = 1;
 
     /**
      * Create a new cable that is linked to two QollidableQuobjects
@@ -28,6 +30,11 @@ public class Quable extends QollidableQuobject {
      */
     public Quable(QollidableQuobject particleA, QollidableQuobject particleB){
         setLinks(particleA, particleB);
+        ExtendableQuism e = new ExtendableQuism(.5);
+        e.setFullColor(Color.blue.getRGB());
+        e.outline(true);
+        e.alwaysLit(true);
+        setQuobject(e);
     }
 
     /**

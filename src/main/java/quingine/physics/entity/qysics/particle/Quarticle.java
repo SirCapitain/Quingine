@@ -24,6 +24,11 @@ public class Quarticle extends QollidableQuobject {
         setGravity(new Quisition(0,-9.8,0));
     }
 
+    public Quarticle(String objectFile, double x, double y, double z, double size){
+        super(objectFile, x, y, z, size);
+        setGravity(new Quisition(0,-9.8,0));
+    }
+
     /**
      * Set how fast the particle loses its velocity
      * @param drag 1 (retains all velocity), 0 (loses all velocity)

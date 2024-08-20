@@ -4,7 +4,7 @@ import quingine.render.sim.cam.Quamera;
 import quingine.render.sim.env.Quworld;
 import quingine.physics.entity.qysics.particle.Quarticle;
 import quingine.render.sim.env.light.LightSource;
-import quingine.render.sim.env.obj.ExtendableQuism;
+import quingine.render.sim.env.obj.prism.ExtendableQuism;
 import quingine.render.sim.env.obj.Quobject;
 import quingine.render.sim.env.obj.prism.Qube;
 import quingine.render.sim.pos.Quisition;
@@ -29,7 +29,7 @@ public class Quingine {
         picture.setBackgroundColor(Color.BLACK);
         window.setFps(0);
         picture.setPercentResolution(.4);
-        window.setTitle("Quingine 24.8.19");
+        window.setTitle("Quingine 24.8.20");
         world.getPlayer().setGravity(new Quisition());
 
 //        world.load("15x15Checkers.quworld");
@@ -104,14 +104,43 @@ public class Quingine {
         particleB.getQuobject().setFullColor(Color.red.getRGB());
         particleB.setMass(10);
 
-        ExtendableQuism eq = new ExtendableQuism(1);
-        eq.setFullColor(Color.blue.getRGB());
-        eq.outline(true);
-        eq.alwaysLit(true);
+        //Hanging Thing
+        Quarticle p = new Quarticle();
+        p.setQuobject(new Quobject("sphere.obj",0,0,0,1));
+        world.add(p);
+        p.setPos(15,0,0);
+        Quarticle p2 = new Quarticle();
+        p2.setQuobject(new Quobject("sphere.obj",0,0,0,1));
+        world.add(p2);
+        p2.setPos(15,0,5);
 
-        Rod cable = new Rod(particleA, particleB);
-        cable.setQuobject(eq);
-        world.add(cable);
+        Rod c = new Rod(p,p2);
+        c.setMaxLength(5);
+        world.add(c);
+
+        Quarticle h = new Quarticle();
+        h.setQuobject(new Quobject("sphere.obj",0,0,0,1));
+        world.add(h);
+        h.isLocked(true);
+        h.setPos(15,5,0);
+        Quarticle h2 = new Quarticle();
+        h2.setQuobject(new Quobject("sphere.obj",0,0,0,1));
+        h2.setPos(15,5,5);
+        world.add(h2);
+        h2.isLocked(true);
+
+        p.setMass(5);
+        p2.setMass(5);
+
+        Quable q = new Quable(h,p);
+        world.add(q);
+        q.setMaxLength(5);
+
+        Quable q2 = new Quable(p2,h2);
+        world.add(q2);
+        q2.setMaxLength(5);
+
+
 
         AtomicBoolean down = new AtomicBoolean(false);
 
@@ -158,7 +187,7 @@ public class Quingine {
         while(true) {
             try {
                 Thread.sleep(10);
-            } catch (Exception e) {
+            } catch (Exception e4) {
             }
             picture.getQuamera().updateMovement(speed, rotSpeed, window);
             world.getPlayer().setPos(picture.getQuamera().getPos());

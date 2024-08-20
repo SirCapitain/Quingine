@@ -50,21 +50,26 @@ public class ContactGenerator {
      * @param particleB another QollidableQuobject
      * @param separatingVelocity the velocity at which they separate at. (look... you are going to have to figure it out yourself if you want to know more)
      * @param direction the direction at which the contact is made at in the form of a Quisition
-     * @param restitution the bounciness.. or the boinginess of the contact.
+     * @param restitution the bounciness... or the boinginess of the contact.
      */
     public static void calculateVelocities(QollidableQuobject particleA, QollidableQuobject particleB, double separatingVelocity, Quisition direction, double restitution){
         if (separatingVelocity > 0)//Is it moving away or not moving at all?
             return;
         double newSeparatingVelocity = -separatingVelocity * restitution;
 
+        boolean nullLockA = particleA == null || particleA.isLocked();
+        boolean nullLockB = particleB == null || particleB.isLocked();
+
         //If particle locked, treat it as a brick wall.
-        if (particleB != null && particleB.isLocked())
-            particleB = null;
+        if (nullLockA && nullLockB)
+            return;
 
         //Resolves the resting contact of the particle so that
         //it does not bounce constantly
-        Quisition acceleration = new Quisition(particleA.getAcceleration());
-        if (particleB != null)
+        Quisition acceleration = new Quisition();
+        if (!nullLockA)
+            acceleration.add(particleA.getAcceleration());
+        if (!nullLockB)
             acceleration.subtract(particleB.getAcceleration());
         double separatingAccel = Math3D.getDotProduct(direction, acceleration);
         if (separatingAccel < 0){
@@ -74,24 +79,31 @@ public class ContactGenerator {
 
         //Calculate the impulse of the collision
         double deltaVelocity = newSeparatingVelocity - separatingVelocity;
-        double massTotal = 1/particleA.getMass();
-        if (particleB != null)
+        double massTotal = 0;
+        if (!nullLockA)
+            massTotal += 1/particleA.getMass();
+        if (!nullLockB)
             massTotal += 1/particleB.getMass();
         double impulse = deltaVelocity / massTotal;
+
         Quisition impulsePerMass = new Quisition(direction);
         impulsePerMass.multiply(impulse);
-
+        Quisition velocity = new Quisition();
         //Apply velocity to first particle
-        Quisition velocity = new Quisition(particleA.getVelocity());
-        impulsePerMass.divide(particleA.getMass());
-        velocity.add(impulsePerMass);
-        particleA.setVelocity(velocity);
+        if (!nullLockA) {
+            velocity.add(particleA.getVelocity());
+            impulsePerMass.divide(particleA.getMass());
+            velocity.add(impulsePerMass);
+            particleA.setVelocity(velocity);
+        }
 
         //Apply velocity to second particle
-        if (particleB == null)
+        if (nullLockB)
             return;
+        impulsePerMass = new Quisition(direction);
+        impulsePerMass.multiply(impulse);
         velocity = new Quisition(particleB.getVelocity());
-        impulsePerMass.multiply(particleA.getMass()/-particleB.getMass());
+        impulsePerMass.divide(-particleB.getMass());
         velocity.add(impulsePerMass);
         particleB.setVelocity(velocity);
     }
@@ -112,7 +124,11 @@ public class ContactGenerator {
         if (penetration <= 0)
             return;
         Quisition impulsePerMass = new Quisition(normal);
-        double totalMass = 1/particleA.getMass() + 1/particleB.getMass();
+        double totalMass = 0;
+        if (!particleA.isLocked())
+            totalMass += 1/particleA.getMass();
+        if (!particleB.isLocked())
+            totalMass += 1/particleB.getMass();
         impulsePerMass.multiply(penetration / totalMass);
         impulsePerMass.divide(particleA.getMass());
         if (!particleA.isLocked())

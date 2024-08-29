@@ -26,5 +26,22 @@ public class MathPhys {
         return Math3D.getDotProduct(velocity, contactNormal);
     }
 
+    /**
+     * Get the vector of how an object should rotate based off
+     * of an impact
+     * @param impactPoint where the impact is occurring
+     * @param impactOrigin where the impact originates from
+     * @param impactVector the direction of the impact
+     * @param objectPosition where the object is currently at
+     * @return new Quisition vector of the axis of rotation
+     */
+    public static Quisition getRotationVector(Quisition impactPoint, Quisition impactOrigin, Quisition impactVector, Quisition objectPosition){
+        Quisition iO = new Quisition(impactOrigin);
+        iO.subtract(objectPosition);
+        Quisition iP = new Quisition(impactPoint);
+        iP.subtract(objectPosition);
+        return Math3D.normalize(Math3D.getCrossProduct(Math3D.normalize(iO), Math3D.normalize(iP), impactVector));
+    }
+
 
 }

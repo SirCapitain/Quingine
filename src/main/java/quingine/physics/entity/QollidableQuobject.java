@@ -25,7 +25,7 @@ public class QollidableQuobject extends Quomponent {
     private boolean hasCollision = true;
 
     /**
-     * Create a new entity
+     * Create a new qollidable quobject!
      */
     public QollidableQuobject() {
         super();
@@ -34,6 +34,14 @@ public class QollidableQuobject extends Quomponent {
         gravity = new Quisition();
     }
 
+    /**
+     * A different way to make a qollidable quobject! How fun!!
+     * @param objectFile a triangulated .obj file
+     * @param x position in 3D space
+     * @param y position in 3D space
+     * @param z position in 3D space
+     * @param size how big you want it
+     */
     public QollidableQuobject(String objectFile, double x, double y, double z, double size){
         super();
         velocity = new Quisition();
@@ -70,8 +78,6 @@ public class QollidableQuobject extends Quomponent {
     @Override
     public void setPos(double x, double y, double z){
         super.setPos(x, y, z);
-        if (object != null)
-            object.setPos(x, y, z);
     }
 
     /**
@@ -81,15 +87,17 @@ public class QollidableQuobject extends Quomponent {
     @Override
     public void setPos(Quisition pos){
         super.setPos(pos);
-        if (object != null)
-            object.setPos(pos);
     }
 
+    /**
+     * Change the position by individual values
+     * @param x vector x
+     * @param y vector y
+     * @param z vector z
+     */
     @Override
     public void changePosBy(double x, double y, double z){
         super.changePosBy(x, y, z);
-        if (object != null)
-            object.changePosBy(x, y, z);
     }
 
     /**
@@ -138,8 +146,6 @@ public class QollidableQuobject extends Quomponent {
      * @param vector quisition has a vector
      */
     public void changePosBy(Quisition vector){
-        if (object != null)
-            object.changePosBy(vector.x, vector.y, vector.z);
         changePosBy(vector.x, vector.y, vector.z);
     }
 
@@ -155,7 +161,7 @@ public class QollidableQuobject extends Quomponent {
 
     /**
      * Get the current velocity of the particle
-     * @return
+     * @return a quisition of the velocity
      */
     public Quisition getVelocity(){
         return velocity;

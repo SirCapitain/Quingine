@@ -30,9 +30,7 @@ public class Quobject extends Quomponent {
     private String textureFile;
     private String objectFile;
 
-    private double yaw = 0;
-    private double pitch = 0;
-    private double roll = 0;
+    private Quisition rotation = new Quisition();
 
     private Quisition[] points;
     private Quisition[][] faces;
@@ -40,8 +38,6 @@ public class Quobject extends Quomponent {
 
     private double[][] texPoints;
     private double[][][] texFaces;
-
-    private boolean update = true;
 
     private boolean fill = true;
     private boolean outline = false;
@@ -319,6 +315,39 @@ public class Quobject extends Quomponent {
     }
 
     /**
+     * Rotate the quobject around a specific point.
+     * @param pos the point that the quobject will rotate around.
+     * @param vx vector x
+     * @param vy vector y
+     * @param vz vector z
+     * This should be a unit vector!
+     * @param theta radians of rotation.
+     */
+    public synchronized void rotate(Quisition pos, double vx, double vy, double vz, double theta) {
+        double sin = Math.sin(theta*.5);
+        rotate(new Quisition(vx*sin,vy*sin,vz*sin,Math.cos(theta*.5)), pos);
+    }
+
+    /**
+     * Rotate a quobject based off a quaternion.
+     * @param quaternion a Quisition to represent the quaternion
+     * @param pos a Quisition that represents what the quobject will rotate around
+     */
+    public synchronized void rotate(Quisition quaternion, Quisition pos){
+        rotation.setPos(Math3D.combineQuaternions(quaternion, rotation));
+        for (Quisition point : tempPoints)
+            Math3D.rotate(point, pos, quaternion);
+    }
+
+    /**
+     * Rotate a quobject based off a quaternion.
+     * @param quaternion a Quisition to represent the quaternion
+     */
+    public synchronized void rotate(Quisition quaternion){
+        rotate(quaternion, getPos());
+    }
+
+    /**
      * Rotate a quobject with respect to its own origin,
      * and yaw, pitch, and roll.
      * @param yaw radians of rotation on the y-axis
@@ -326,31 +355,88 @@ public class Quobject extends Quomponent {
      * @param roll radians of rotation on the z-axis
      */
     public synchronized void rotate(double yaw, double pitch, double roll){
-        this.yaw += yaw;
-        this.pitch += pitch;
-        this.roll += roll;
-        for (Quisition point : tempPoints)
-            Math3D.rotate(point, getPos(), yaw, pitch, roll);
-        if (update)
-            for (int i = 0; i < points.length; i++)
-                points[i].setPos(tempPoints[i]);
+        rotate(Math3D.eulerToQuaternion(yaw, pitch, roll));
     }
 
     /**
-     * Rotate the quobject around a specific point.
-     * @param pos the point that the quobject will rotate around.
+     * Set the rotation of a quobject based off a quaternion and a point of rotation
+     * @param quaternion a quisition to represent the quaternion
+     * @param point a quisition to rotate around
+     */
+    public synchronized void setRotation(Quisition quaternion, Quisition point){
+        Quisition rot = new Quisition(rotation);
+        rot.w *= -1;
+        rotation = new Quisition(quaternion);
+        rot = Math3D.combineQuaternions(quaternion, rot);
+        for (Quisition p : tempPoints)
+            Math3D.rotate(p, point, rot);
+    }
+
+    /**
+     * Set the rotation of the quobject based off a vector and a point of rotation
+     * @param point A Quisition to rotate around
      * @param vx vector x
      * @param vy vector y
      * @param vz vector z
-     * <NOTE>ALL VECTORS WHEN SQUARED AND ADDED TOGETHER SHOULD EQUAL 1!</NOTE>
+     * This should be a unit vector!
      * @param theta radians of rotation.
      */
-    public synchronized void rotate(Quisition pos, double vx, double vy, double vz, double theta) {
-        for (Quisition point : tempPoints)
-            Math3D.rotate(point, pos, vx, vy, vz, theta);
-        if (update)
-            for (int i = 0; i < points.length; i++)
-                points[i].setPos(tempPoints[i]);
+    public synchronized void setRotation(Quisition point, double vx, double vy, double vz, double theta) {
+        double sin = Math.sin(theta*.5);
+        setRotation(new Quisition(vx*sin,vy*sin,vz*sin,Math.cos(theta*.5)), point);
+    }
+
+    /**
+     * Set the rotation of the quobject based off a vector
+     * @param vx vector x
+     * @param vy vector y
+     * @param vz vector z
+     * This should be a unit vector!
+     * @param theta radians of rotation.
+     */
+    public synchronized void setRotation(double vx, double vy, double vz, double theta) {
+        double sin = Math.sin(theta*.5);
+        setRotation(new Quisition(vx*sin,vy*sin,vz*sin,Math.cos(theta*.5)), getPos());
+    }
+
+    /**
+     * Set the rotation of the quobject base off yaw, pitch, and roll.
+     * The Euler rotation being used is YXZ
+     * @param yaw radians of rotation on the y-axis
+     * @param pitch radians of rotation on the x-axis
+     * @param roll radians of rotation on the z-axis
+     * @param point A quisition to rotate around
+     */
+    public synchronized void setRotation(double yaw, double pitch, double roll, Quisition point) {
+        Quisition quaternion = Math3D.eulerToQuaternion(yaw, pitch, roll);
+        setRotation(quaternion, point);
+    }
+
+    /**
+     * Set the rotation of the quobject base off yaw, pitch, and roll.
+     * The Euler rotation being used is YXZ
+     * @param yaw radians of rotation on the y-axis
+     * @param pitch radians of rotation on the x-axis
+     * @param roll radians of rotation on the z-axis
+     */
+    public synchronized void setRotation(double yaw, double pitch, double roll) {
+        setRotation(yaw, pitch, roll, getPos());
+    }
+
+    /**
+     * Set the rotation of the quobject based off a quaternion
+     * @param quaternion a Quisition to represent the quaternion
+     */
+    public synchronized void setRotation(Quisition quaternion){
+       setRotation(quaternion, getPos());
+    }
+
+    /**
+     * Get the current rotation of a quobject.
+     * @return a Quaternion in the form of a Quisiition.
+     */
+    public Quisition getRotation(){
+        return rotation;
     }
 
     /**
@@ -404,9 +490,6 @@ public class Quobject extends Quomponent {
             point.add(x, y, z);
         }
         super.setPos(x,y,z);
-        if (update)
-            for (int i = 0; i < tempPoints.length; i++)
-                points[i].setPos(tempPoints[i]);
     }
 
     /**
@@ -424,10 +507,6 @@ public class Quobject extends Quomponent {
         for (Quisition point : tempPoints)
             point.add(x, y, z);
         super.changePosBy(x,y,z);
-        if (update)
-            for (int i = 0; i < tempPoints.length; i++)
-                points[i].setPos(tempPoints[i]);
-
     }
 
     /**
@@ -497,15 +576,11 @@ public class Quobject extends Quomponent {
     }
 
     /**
-     * Update the position of the quobject and
-     * its points.
-     * @param update boolean, true if updating, false if not.
+     * Update the position of the quobject and its points.
      */
-    private void updateComponents(boolean update){
-        this.update = update;
-        if (update)
-            for (int i = 0; i < points.length; i++)
-                points[i].setPos(tempPoints[i]);
+    private void updateComponents(){
+    for (int i = 0; i < points.length; i++)
+            points[i].setPos(tempPoints[i]);
     }
 
     /**
@@ -527,23 +602,12 @@ public class Quobject extends Quomponent {
     }
 
     /**
-     * Reload the quobject.
+     * Reload the quobject based off the object file.
      */
     public void reload(){
-        loadQuobjectFile(objectFile);
-        yaw = 0;
-        pitch = 0;
-        roll = 0;
-    }
-
-    /**
-     * Get the current yaw, pitch, roll of the quobject
-     * Does not properly represent the rotation properly
-     * because it does not include rotation by vector
-     * @return new double[]{yaw, pitch, roll}
-     */
-    public double[] getRotation(){
-        return new double[]{yaw, pitch, roll};
+        if (objectFile != null)
+            loadQuobjectFile(objectFile);
+        rotation = new Quisition();
     }
 
     /**
@@ -554,7 +618,6 @@ public class Quobject extends Quomponent {
 
     @Override
     public void paint(Quicture pic, Quamera camera) {
-        updateComponents(false);
         for (int i = 0; i < faces.length; i++) {
             double[][] texturePoints;
             if (texPoints != null && texFaces != null)
@@ -563,7 +626,7 @@ public class Quobject extends Quomponent {
                 texturePoints = null;
             paintPlane(pic, camera, faces[i], texturePoints);
         }
-        updateComponents(true);
+        updateComponents();
     }
 
     /**

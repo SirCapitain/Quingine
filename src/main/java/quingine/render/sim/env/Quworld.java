@@ -158,8 +158,8 @@ public class Quworld{
             FileWriter writer = new FileWriter(file);
             for (Quobject object : quobjects) {
                 Quisition pos = object.getPos();
-                double[] rot = object.getRotation();
-                writer.write("q " + object.getObjectFile() + " " + pos.x + " " + pos.y + " " + pos.z + " " + object.getSize() + " " + object.getTextureFile() + " " + rot[0] + " " + rot[1] + " " + rot[2] + "\n");
+                Quisition rot = object.getRotation();
+                writer.write("q " + object.getObjectFile() + " " + pos.x + " " + pos.y + " " + pos.z + " " + object.getSize() + " " + object.getTextureFile() + " " + rot.x + " " + rot.y + " " + rot.z + " " + rot.w + "\n");
             }
             for (QollidableQuobject object : qollidableQuobjects) {
                 Quisition pos = object.getPos();
@@ -210,7 +210,7 @@ public class Quworld{
                     Quobject obj = new Quobject(file, Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()));
                     obj.setTexture(reader.next());
                     obj.alwaysLit(true);
-                    obj.rotate(Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()));
+                    obj.rotate(new Quisition(Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next())));
                     add(obj);
                 }
                 else if (str.equals("p")){
@@ -305,8 +305,8 @@ public class Quworld{
      * Update the quworld
      */
     public void update(){
-        for (QollidableQuobject qollidableQuobject : qollidableQuobjects)
-            qollidableQuobject.update(this);
+        for (int i = 0; i < qollidableQuobjects.size(); i++)
+            qollidableQuobjects.get(i).update(this);
         for (QuworldTickListener listener : tickListeners)
             listener.tickUpdate(tickSpeed, currentTick);
 

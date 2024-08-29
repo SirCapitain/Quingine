@@ -27,32 +27,88 @@ public class Math3D {
             return;
         if (Double.isNaN(vx) || Double.isNaN(vy) || Double.isNaN(vz))
             return;
-        double x = pos.x - origin.x;
-        double y = pos.y - origin.y;
-        double z = pos.z - origin.z;
-        theta *= .5;
-        double a = Math.cos(theta);
-        vx *= Math.sin(theta);
-        vy *= Math.sin(theta);
-        vz *= Math.sin(theta);
+        double sin = Math.sin(theta*.5);
+        rotate(pos, origin, new Quisition(vx*sin, vy*sin, vz*sin, Math.cos(theta*.5)));
+    }
+
+    /**
+     * Rotate a point around another with the use of a Quaternion! Wow!
+     * @param point the point the is being rotated
+     * @param origin the point the other point is being rotated around
+     * @param quaternion a Quisition
+     */
+    public static void rotate(Quisition point, Quisition origin, Quisition quaternion){
+        double x = point.x - origin.x;
+        double y = point.y - origin.y;
+        double z = point.z - origin.z;
+        double a = quaternion.w;
+        double vx = quaternion.x;
+        double vy = quaternion.y;
+        double vz = quaternion.z;
         double[][] q =
-                       {{a, -vx, -vy, -vz},
-                        {vx, a, -vz, vy},
-                        {vy, vz, a, -vx},
-                        {vz, -vy, vx, a}};
+                {{a, -vx, -vy, -vz}};
         double[][] p =
-                       {{1, -x, -y, -z},
+                {{1, -x, -y, -z},
                         {x, 1, -z, y},
                         {y, z, 1, -x},
                         {z, -y, x, 1}};
-        double[][] iq =
-                       {{a, vx, vy, vz},
-                        {-vx, a, vz, -vy},
-                        {-vy, -vz, a, vx},
-                        {-vz, vy, -vx, a}};
-        double[][] result = matrixMult(matrixMult(q, p), iq);
-        pos.setPos(-result[0][1], -result[0][2], -result[0][3]);
-        pos.add(origin);
+        double[] qp = matrixMult(q, p)[0];
+        point.setPos(qp[0]*-vx + qp[1]*-a + qp[2]*vz + qp[3]*-vy, qp[0]*-vy + qp[1]*-vz + qp[2]*-a + qp[3]*vx, qp[0]*-vz + qp[1]*vy + qp[2]*-vx + qp[3]*-a);
+        point.add(origin);
+    }
+
+    /**
+     * Combines two quaternion rotation methods into one.
+     * Order does matter here. I mean... try rotating something
+     * in real life. Order really does matter.
+     * @param quat1 The first quaternion
+     * @param quat2 The second quaternion
+     * @return a new Quaternion combined in the form of a Quisition
+     */
+    public static Quisition combineQuaternions(Quisition quat1, Quisition quat2){
+        double a1 = quat1.w;
+        double vx1 = quat1.x;
+        double vy1 = quat1.y;
+        double vz1 = quat1.z;
+        double a2 = quat2.w;
+        double vx2 = quat2.x;
+        double vy2 = quat2.y;
+        double vz2 = quat2.z;
+        return new Quisition(a1*vx2 + vx1*a2 + vy1*vz2 - vz1*vy2, a1*vy2 - vx1*vz2 + vy1*a2 + vz1*vx2, a1*vz2 + vx1*vy2 - vy1*vx2 + vz1*a2, a1*a2 - vx1*vx2 - vy1*vy2 - vz1*vz2);
+    }
+
+    /**
+     * Change the Euler rotation of yaw, pitch, and roll into a quaternion.
+     * The Euler rotation method being used is YXZ.
+     * @param yaw rotation around the y-axis
+     * @param pitch rotation around the x-axis
+     * @param roll rotation around the z-axis
+     * @return a Quaternion in the form of a Quisition
+     */
+    public static Quisition eulerToQuaternion(double yaw, double pitch, double roll){
+        yaw *= .5;
+        pitch *= .5;
+        roll *= .5;
+        double cy = Math.cos(yaw);
+        double sy = Math.sin(yaw);
+        double cp = Math.cos(pitch);
+        double sp = Math.sin(pitch);
+        double cr = Math.cos(roll);
+        double sr = Math.sin(roll);
+        double w = cy * cp * cr - sy * sp * sr;
+        double x = sy * cp * cr + cy * sp * sr;
+        double y = cy * sp * cr - sy * cp * sr;
+        double z = cy * cp * sr + sy * sp * cr;
+        if (!Double.isFinite(w))
+            w = 0;
+        if (!Double.isFinite(x))
+            x = 0;
+        if (!Double.isFinite(y))
+            y = 0;
+        if (!Double.isFinite(z))
+            z = 0;
+        return new Quisition(y,x,z,w);//Yeah, it's meant to be in that order.
+
     }
 
     /**
@@ -133,8 +189,8 @@ public class Math3D {
     /**
      * Get the cross product of two vectors.
      * @param origin the point from which both vectors start
-     * @param vec1 first vector  (i)
-     * @param vec2 second vector (j)
+     * @param vec1 first vector
+     * @param vec2 second vector
      * @return new quisition that is the normal vector.
      */
     public static Quisition getCrossProduct(Quisition origin, Quisition vec1, Quisition vec2){
@@ -149,14 +205,19 @@ public class Math3D {
 
     /**
      * Get the cross product to two vectors
-     * @param vec1 first vector  (i)
-     * @param vec2 second vector (j)
+     * @param vec1 first vector
+     * @param vec2 second vector
      * @return new quisition that is the normal vector.
      */
     public static Quisition getCrossProduct(Quisition vec1, Quisition vec2){
         return new Quisition(vec1.y*vec2.z - vec1.z*vec2.y, vec1.z*vec2.x - vec1.x*vec2.z, vec1.x*vec2.y - vec1.y*vec2.x);
     }
 
+    /**
+     * Get the normal vector of a set of three points
+     * @param points Quintion[]{QuisitionA, QuisitionB, QuisitionC}
+     * @return a normalized Quisition representing the normal vector
+     */
     public static Quisition getNormal(Quisition[] points){
         return normalize(getCrossProduct(points[1], points[0], points[2]));
     }
@@ -214,23 +275,6 @@ public class Math3D {
         if (Double.isFinite(r))
             return r;
         return 0;
-    }
-
-    /**
-     * Get the vector of how an object should rotate based off
-     * of an impact
-     * @param impactPoint where the impact is occurring
-     * @param impactOrigin where the impact originates from
-     * @param impactVector the direction of the impact
-     * @param objectPosition where the object is currently at
-     * @return new Quisition vector of the axis of rotation
-     */
-    public static Quisition getRotationVector(Quisition impactPoint, Quisition impactOrigin, Quisition impactVector, Quisition objectPosition){
-        Quisition iO = new Quisition(impactOrigin);
-        iO.subtract(objectPosition);
-        Quisition iP = new Quisition(impactPoint);
-        iP.subtract(objectPosition);
-        return Math3D.normalize(Math3D.getCrossProduct(Math3D.normalize(iO), Math3D.normalize(iP), impactVector));
     }
 
     /**
@@ -396,19 +440,19 @@ public class Math3D {
     }
 
     /**
-     * Multiply two matrices together
+     * Multiply two matrices togetherh
      * @param mat1 matrix 1
      * @param mat2 matrix 2
      * @return new double[][]
      */
     public static double[][] matrixMult(double[][] mat1, double[][] mat2){
-        if (mat1 == null || mat2 == null || mat1.length != mat2[0].length)
+        if (mat1 == null || mat2 == null || mat1[0].length != mat2.length)
             return null;
         double[][] result = new double[mat1.length][mat2[0].length];
         for (int row = 0; row < mat1.length; row++){
             for (int col = 0; col < mat2[0].length; col++)
                 for (int i = 0; i < mat1[0].length; i++)
-                    result[row][col] += mat1[row][i]*mat2[i][col];
+                    result[row][col] += mat1[row][i] * mat2[i][col];
         }
         return result;
     }

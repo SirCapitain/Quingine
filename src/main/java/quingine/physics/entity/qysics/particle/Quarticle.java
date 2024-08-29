@@ -85,8 +85,8 @@ public class Quarticle extends QollidableQuobject {
      */
     private void contact(Quworld world){
         ContactGenerator.resolveWall(new Quisition(0,1,0), new Quisition(0,-4,0), this, getRestitution());
-        for (QollidableQuobject obj : world.getQollidableQuobjects())
-            if (obj instanceof Quarticle particle) {
+        for (int i = 0; i < world.getQollidableQuobjects().size(); i++)
+            if (world.getQollidableQuobjects().get(i) instanceof Quarticle particle) {
                 if (particle == this)
                     continue;
                 ContactGenerator.resolveVelocity(this, particle, particle.getRestitution());

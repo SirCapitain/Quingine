@@ -268,7 +268,7 @@ public class Quaphics {
         double u3 = points[2].u;
 
         double v1 = points[0].v;
-        double v2=  points[1].v;
+        double v2 = points[1].v;
         double v3 = points[2].v;
 
         double w1 = points[0].w;
@@ -355,7 +355,7 @@ public class Quaphics {
                     texV /= texW;
 
                     int texX = (int) Math.round(texU * image.getWidth());
-                    int texY = (int) Math.round(texV * image.getHeight());
+                    int texY = (int) (image.getHeight() - Math.round(texV * image.getHeight()));
 
                     texX = Math.min(texX, image.getWidth() - 1);
                     texY = Math.min(texY, image.getHeight() - 1);

@@ -51,7 +51,7 @@ public class LightSource extends Quomponent {
          Quisition direction = new Quisition(getPos());
          direction.subtract(point);
          direction.normalize();
-         return power * Math3D.getDotProduct(direction, normal)/(Math3D.getMagnitude(newPoint));
+         return power * Math3D.getDotProduct(direction, normal)/((Math3D.getMagnitude(newPoint)));
     }
 
     /**

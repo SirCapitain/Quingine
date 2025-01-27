@@ -1,7 +1,5 @@
 package quingine.render.sim.env;
 
-import quingine.physics.entity.qysics.link.cable.Quable;
-import quingine.physics.entity.qysics.link.spring.Spring;
 import quingine.physics.entity.qysics.particle.Quarticle;
 import quingine.render.sim.cam.Quamera;
 import quingine.physics.entity.QollidableQuobject;
@@ -10,9 +8,12 @@ import quingine.render.sim.env.light.LightSource;
 import quingine.render.sim.env.obj.Quobject;
 import quingine.render.sim.listener.QuworldTickListener;
 import quingine.render.sim.pos.Quisition;
+import quingine.render.util.dev.DevWindow;
 import quingine.render.util.win.Quicture;
+import quingine.render.util.win.Quindow;
 import quingine.render.util.win.Quomponent;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -43,6 +44,8 @@ public class Quworld{
 
     private Player player;
 
+    private DevWindow devWin;
+
     /**
      * Creating a regular quworld with no quicture
      */
@@ -66,15 +69,15 @@ public class Quworld{
      * @return true if successfully added, false if failed.
      */
     public boolean add(Quomponent quomponent){
-        if (quomponent instanceof Quobject)
-            if (!quobjects.contains(quomponent))
-                return quobjects.add((Quobject) quomponent);
-        if (quomponent instanceof LightSource)
-            if (!lightSources.contains(quomponent))
-                return lightSources.add((LightSource) quomponent);
-        if (quomponent instanceof QollidableQuobject)
-            if (!qollidableQuobjects.contains(quomponent))
-                return qollidableQuobjects.add((QollidableQuobject) quomponent);
+        if (quomponent instanceof Quobject obj)
+            if (!quobjects.contains(obj))
+                return quobjects.add(obj);
+        if (quomponent instanceof LightSource ls)
+            if (!lightSources.contains(ls))
+                return lightSources.add(ls);
+        if (quomponent instanceof QollidableQuobject qq)
+            if (!qollidableQuobjects.contains(qq))
+                return qollidableQuobjects.add(qq);
         return false;
     }
 
@@ -331,8 +334,21 @@ public class Quworld{
         return player;
     }
 
+    /**
+     * Get the current tick-rate of the quworld
+     * @return int of the current speed.
+     */
     public int getCurrentTickSpeed(){
         return currentTickSpeed;
+    }
+
+    /**
+     * Enabling developer mode opens up a dev window
+     * and allows a more easy way to create quworlds.
+     */
+    public void enableDevMode(){
+        devWin = new DevWindow(this);
+        devWin.setLocation(900,0);
     }
 
     /**

@@ -169,7 +169,6 @@ public class Quisition {
      * @param value amount taken from the x, y, and z
      */
     public synchronized void subtract(double value){
-        w -= value;
         x -= value;
         y -= value;
         z -= value;
@@ -180,7 +179,6 @@ public class Quisition {
      * @param pos another position you want to multiply the current by.
      */
     public synchronized void multiply(Quisition pos){
-        w *= pos.w;
         x *= pos.x;
         y *= pos.y;
         z *= pos.z;
@@ -191,7 +189,6 @@ public class Quisition {
      * @param value value the x, y, and z are multiplied by
      */
     public synchronized void multiply(double value){
-        w *= value;
         x *= value;
         y *= value;
         z *= value;
@@ -202,7 +199,6 @@ public class Quisition {
      * @param pos another position you want to divide the current from.
      */
     public synchronized void divide(Quisition pos){
-        w /= pos.w;
         x /= pos.x;
         y /= pos.y;
         z /= pos.z;
@@ -213,7 +209,6 @@ public class Quisition {
      * @param value amount that x, y, and z are divided by
      */
     public synchronized void divide(double value){
-        w /= value;
         x /= value;
         y /= value;
         z /= value;

@@ -30,6 +30,8 @@ public class Quobject extends Quomponent {
     private String textureFile;
     private String objectFile;
 
+    private String name;
+
     private Quisition rotation = new Quisition();
 
     private Quisition[] points;
@@ -112,7 +114,7 @@ public class Quobject extends Quomponent {
         ArrayList<Double> texturePoints = new ArrayList<>();
         ArrayList<Integer> faces = new ArrayList<>();
         ArrayList<Integer> textureFaces = new ArrayList<>();
-        File object =  new File(System.getProperty("user.dir") + "/src/main/resources/objects/" + objectFile);
+        File object =  new File(System.getProperty("user.dir") + "/src/main/resources/objects/" + objectFile + "/" + objectFile + ".obj");
         try {
             Scanner reader = new Scanner(object);
             while (reader.hasNext()){
@@ -140,7 +142,23 @@ public class Quobject extends Quomponent {
             setFaces(faces);
             setTexturePoints(texturePoints);
             setTextureFaces(textureFaces);
-        }catch (Exception e){e.printStackTrace();}
+
+            //Read .mtl file
+            object = new File(System.getProperty("user.dir") + "/src/main/resources/objects/" + objectFile + "/" + objectFile + ".mtl");
+            try {
+                reader = new Scanner(object);
+                while (reader.hasNext()) {
+                    String data = reader.next();
+                    if (data.contains("map_Kd"))
+                        setTexture(reader.next());
+                }
+            }catch (Exception e){System.out.println("Object has no material file!");}
+
+        }catch (Exception e){
+            e.printStackTrace();
+            setPoints(new Quisition[0]);
+            setFaces(new int[0][0]);
+        }
     }
 
     /**
@@ -160,7 +178,10 @@ public class Quobject extends Quomponent {
             Graphics2D g = texture.createGraphics();
             g.drawImage(image, 0, 0, null);
             g.dispose();
-        }catch (IOException io){io.printStackTrace();}
+        }catch (IOException io){
+            io.printStackTrace();
+            System.out.println("This texture does not exist!");
+        }
     }
 
     /**
@@ -291,6 +312,15 @@ public class Quobject extends Quomponent {
         for (int i = 0; i < texFaces.length; i++)
             for (int j = 0; j < texFaces[i].length; j++)
                 texFaces[i][j] = texPoints[faces.get(j + i * this.texFaces[i].length)];
+    }
+
+    /**
+     * Get the list of UV coordinates for a face of your choice!
+     * @param face the number of the face.
+     * @return a 2d array containing UV coordinates
+     */
+    public double[][] getTexturePoints(int face){
+        return texFaces[face].clone();
     }
 
     /**
@@ -493,6 +523,30 @@ public class Quobject extends Quomponent {
     }
 
     /**
+     * Set the individual x component of the quobject in 3-D space
+     * @param x position in 3D space
+     */
+    public synchronized void setX(double x){
+        setPos(x, getPos().y, getPos().z);
+    }
+
+    /**
+     * Set the individual y component of the quobject in 3-D space
+     * @param y position in 3D space
+     */
+    public synchronized void setY(double y){
+        setPos(getPos().x, y, getPos().z);
+    }
+
+    /**
+     * Set the individual z component of the quobject in 3-D space
+     * @param z position in 3D space
+     */
+    public synchronized void setZ(double z){
+        setPos(getPos().x, getPos().y, z);
+    }
+
+    /**
      * Change the position of the quobject by a value
      * @param x vector x
      * @param y vector y
@@ -573,6 +627,22 @@ public class Quobject extends Quomponent {
      */
     public boolean alwaysLit(){
         return alwaysLit;
+    }
+
+    /**
+     * Set the name of the quobject so it is easier to find.
+     * @param name any String
+     */
+    public void setName(String name){
+        this.name = name;
+    }
+
+    /**
+     * Get the name the quobject
+     * @return String
+     */
+    public String getName(){
+        return name;
     }
 
     /**

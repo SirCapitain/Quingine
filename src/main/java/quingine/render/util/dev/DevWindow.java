@@ -73,6 +73,7 @@ public class DevWindow extends Quindow {
     public void modifyMenu(){
         MainMenu.menu.setVisible(false);
         ModifyMenu.menu.setVisible(true);
+        ModifyMenu.refreshObjectList();
     }
 
     /**
@@ -80,6 +81,7 @@ public class DevWindow extends Quindow {
      */
     public void mainMenu(){
         MainMenu.menu.setVisible(true);
+        MainMenu.refreshObjectList();
         ModifyMenu.menu.setVisible(false);
     }
 

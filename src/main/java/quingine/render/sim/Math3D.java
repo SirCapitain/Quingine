@@ -112,6 +112,23 @@ public class Math3D {
     }
 
     /**
+     * Changes a quaternion into Euler angles.
+     * The Euler rotation method being used is ZXY.
+     * @param quaternion Quisition representing a quaternion
+     * @return new double[] {yaw, pitch, roll} (in radians)
+     */
+    public static double[] quaternionToEuler(Quisition quaternion){
+        double x = quaternion.x;
+        double y = quaternion.y;
+        double z = quaternion.z;
+        double w = quaternion.w;
+        double yaw = Math.atan2(2*(w*y - z*x), 1 - 2*(y*y + x*x));
+        double pitch = Math.asin(2*(z*y + w*x));
+        double roll = Math.atan2(2*(w*z - y*x), 1 - 2*(x*x + z*z));
+        return new double[]{yaw, pitch, roll};
+    }
+
+    /**
      * This method takes in one points and rotates it around another point.
      * Quaternions are used for this rotation.
      * Quaternions are used for this rotation.

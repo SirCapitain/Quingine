@@ -13,7 +13,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -43,7 +42,8 @@ public class Quobject extends Quomponent {
 
     private boolean fill = true;
     private boolean outline = false;
-    private boolean alwaysLit = false;
+    private boolean alwaysLit = true;
+    private boolean isVisible = true;
 
     private int fillColor = Color.white.getRGB();
     private int outlineColor = Color.black.getRGB();
@@ -78,6 +78,10 @@ public class Quobject extends Quomponent {
         setPoints(points);
     }
 
+    /**
+     * Get the location of the object file the quobject pulled from.
+     * @return string if file used, null if an inside job.
+     */
     public String getObjectFile(){
         return objectFile;
     }
@@ -88,6 +92,22 @@ public class Quobject extends Quomponent {
      */
     public double getSize(){
         return size;
+    }
+
+    /**
+     * Set the size of the quobject
+     * @param size percent of normal size. 0 < size < big number
+     */
+    public synchronized void setSize(double size){
+        if (size <= 0)
+            return;
+        double ratio = size / this.size;
+        this.size = size;
+        for (Quisition point : tempPoints) {
+            point.subtract(getPos());
+            point.multiply(ratio);
+            point.add(getPos());
+        }
     }
 
     /**
@@ -646,6 +666,23 @@ public class Quobject extends Quomponent {
     }
 
     /**
+     * Set the visibility of the quobject
+     * @param isVisible true if visible, false is not
+     */
+    public void isVisible(boolean isVisible){
+        this.isVisible = isVisible;
+    }
+
+    /**
+     * Check the visibility of the quobject
+     * @return true if visible, false is not
+     *
+     */
+    public boolean isVisible(){
+        return isVisible;
+    }
+
+    /**
      * Update the position of the quobject and its points.
      */
     private void updateComponents(){
@@ -688,6 +725,8 @@ public class Quobject extends Quomponent {
 
     @Override
     public void paint(Quicture pic, Quamera camera) {
+        if (!isVisible)
+            return;
         for (int i = 0; i < faces.length; i++) {
             double[][] texturePoints;
             if (texPoints != null && texFaces != null)

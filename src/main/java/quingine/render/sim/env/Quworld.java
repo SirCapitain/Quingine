@@ -10,10 +10,9 @@ import quingine.render.sim.listener.QuworldTickListener;
 import quingine.render.sim.pos.Quisition;
 import quingine.render.util.dev.DevWindow;
 import quingine.render.util.win.Quicture;
-import quingine.render.util.win.Quindow;
 import quingine.render.util.win.Quomponent;
 
-import javax.swing.*;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -153,7 +152,7 @@ public class Quworld{
     }
 
     /**
-     * Save the current quworld as an test.quworld in resources/quworlds/output
+     * Save the current quworld as an untitled.quworld in resources/quworlds/output
      */
     public void save(){
         try {
@@ -162,26 +161,31 @@ public class Quworld{
             for (Quobject object : quobjects) {
                 Quisition pos = object.getPos();
                 Quisition rot = object.getRotation();
-                writer.write("q " + object.getObjectFile() + " " + pos.x + " " + pos.y + " " + pos.z + " " + object.getSize() + " " + object.getTextureFile() + " " + rot.x + " " + rot.y + " " + rot.z + " " + rot.w + "\n");
+                String name = object.getName();
+                if (name == null)
+                    name = "null";
+                writer.write("q;" + object.getObjectFile() + ";" + pos.x + ";" + pos.y + ";" + pos.z + ";" + object.getSize() + ";" + name + ";" + object.getTextureFile() + ";" + rot.x + ";" + rot.y + ";" + rot.z + ";" + rot.w + ";");
             }
             for (QollidableQuobject object : qollidableQuobjects) {
                 Quisition pos = object.getPos();
                 String objectFile = "null";
                 double size = 1;
                 String textureFile = "null";
+                String name = "null";
                 if (object.getQuobject() != null) {
                     objectFile = object.getQuobject().getObjectFile();
                     size = object.getQuobject().getSize();
                     textureFile = object.getQuobject().getTextureFile();
+                    name = object.getQuobject().getName();
                 }
                 if (object instanceof Quarticle particle)
-                    writer.write("p " + objectFile + " " + pos.x + " " + pos.y + " " + pos.z + " " + size + " " + textureFile + " " + particle.getMass() + " " + particle.getRestitution() + " " + particle.getDrag() + "\n");
+                    writer.write("p;" + objectFile + ";" + pos.x + ";" + pos.y + ";" + pos.z + ";" + size + ";" + name + ";" + textureFile + ";" + particle.getMass() + ";" + particle.getRestitution() + ";" + particle.getDrag() + ";");
                 else
-                    writer.write("p " + objectFile + " " + pos.x + " " + pos.y + " " + pos.z + " " + size + " " + textureFile + " " + object.getMass() + "\n");
+                    writer.write("p;" + objectFile + ";" + pos.x + ";" + pos.y + ";" + pos.z + ";" + size + ";" + name + ";" + textureFile + ";" + object.getMass() + ";");
             }
             for (LightSource object : lightSources) {
                 Quisition pos = object.getPos();
-                writer.write("ls " + pos.x + " " + pos.y + " " + pos.z + " " + object.getPower() + "\n");
+                writer.write("ls;" + pos.x + ";" + pos.y + ";" + pos.z + ";" + object.getPower() + ";");
             }
             System.out.println("SAVED!");
             writer.close();
@@ -204,6 +208,7 @@ public class Quworld{
             Scanner reader = new Scanner(object);
             String file;
             String str;
+            reader.useDelimiter(";");
             while (reader.hasNext()) {
                 str = reader.next();
                 if (str.equals("q")){
@@ -211,6 +216,7 @@ public class Quworld{
                     if (file.equals("null"))
                         continue;
                     Quobject obj = new Quobject(file, Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()));
+                    obj.setName(reader.next());
                     obj.setTexture(reader.next());
                     obj.alwaysLit(true);
                     obj.rotate(new Quisition(Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next())));
@@ -221,6 +227,7 @@ public class Quworld{
                     if (file.equals("null"))
                         continue;
                     Quarticle particle = new Quarticle(file, Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()));
+                    particle.getQuobject().setName(reader.next());
                     particle.getQuobject().setTexture(reader.next());
                     particle.setMass(Double.parseDouble(reader.next()));
                     particle.setRestitution(Double.parseDouble(reader.next()));

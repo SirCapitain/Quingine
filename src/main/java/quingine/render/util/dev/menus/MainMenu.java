@@ -97,6 +97,11 @@ public class MainMenu {
         lQ.setFont(new Font("Serif", Font.BOLD,10));
         menu.add(lQ);
         lQ.addActionListener(e -> {
+            String load = JOptionPane.showInputDialog(menu,
+                    "Name of Quworld to load (Must be in quworlds folder)", null);
+            load = load.concat(".quworld");
+            world.load(load);
+            refreshObjectList();
             devWin.update();
         });
         devWin.setPosOf(lQ, 1.2,1.2);
@@ -107,6 +112,7 @@ public class MainMenu {
         sQ.setFont(new Font("Serif", Font.BOLD,10));
         menu.add(sQ);
         sQ.addActionListener(e -> {
+            world.save();
             devWin.update();
         });
         devWin.setPosOf(sQ, 1.2,1.4);

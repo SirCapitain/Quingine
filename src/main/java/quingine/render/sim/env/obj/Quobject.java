@@ -654,7 +654,9 @@ public class Quobject extends Quomponent {
      * @param name any String
      */
     public void setName(String name){
-        this.name = name;
+        this.name = null;
+        if (!name.equals("null"))
+            this.name = name;
     }
 
     /**

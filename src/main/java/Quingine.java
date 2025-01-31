@@ -24,11 +24,13 @@ public class Quingine {
         picture.setBackgroundColor(Color.BLACK);
         window.setFps(0);
         picture.setPercentResolution(.4);
-        window.setTitle("Quingine 25.1.29");
+        window.setTitle("Quingine 25.1.30");
 
-        Quobject cube = new Quobject("cube",0,0,10,1);
-        cube.setName("cube");
-        world.add(cube);
+//        Quobject cube = new Quobject("cube",0,0,10,1);
+//        cube.setName("cube");
+//        world.add(cube);
+
+//        world.load("test.quworld");
 
         world.enableDevMode();
 
@@ -39,8 +41,7 @@ public class Quingine {
         while(true) {
             try {
                 Thread.sleep(10);
-            } catch (Exception e4) {
-            }
+            } catch (Exception e) {}
             picture.getQuamera().updateMovement(speed, rotSpeed, window);
             world.getPlayer().setPos(picture.getQuamera().getPos());
         }

@@ -116,6 +116,28 @@ public class Quworld{
         return quobjects;
     }
 
+
+    /**
+     * Get a quobject based off of the name of the quobject.
+     * @param name String of name
+     * @return first quobject with that name. Null if no matches
+     */
+    public Quobject getQuobject(String name){
+        for (int i = 0; i < quobjects.size(); i++)
+            if (quobjects.get(i).getName().equals(name))
+                return quobjects.get(i);
+        return null;
+    }
+
+    /**
+     * Get Quobject based off of an index.
+     * @param index int of place in the quobjects list
+     * @return quobject with that index
+     */
+    public Quobject getQuobject(int index){
+        return quobjects.get(index);
+    }
+
     /**
      * Get the current list of light sources the quworld currently has.
      * @return an array list of light sources currently in use.
@@ -152,11 +174,12 @@ public class Quworld{
     }
 
     /**
-     * Save the current quworld as an untitled.quworld in resources/quworlds/output
+     * Save the current quworld as a .quworld in resources/quworlds
+     * @param title String of the file name
      */
-    public void save(){
+    public void save(String title){
         try {
-            File file = new File(System.getProperty("user.dir") + "/src/main/resources/quworlds/output/untitled.quworld");
+            File file = new File(System.getProperty("user.dir") + "/src/main/resources/quworlds/" + title + ".quworld");
             FileWriter writer = new FileWriter(file);
             for (Quobject object : quobjects) {
                 Quisition pos = object.getPos();
@@ -164,7 +187,7 @@ public class Quworld{
                 String name = object.getName();
                 if (name == null)
                     name = "null";
-                writer.write("q;" + object.getObjectFile() + ";" + pos.x + ";" + pos.y + ";" + pos.z + ";" + object.getSize() + ";" + name + ";" + object.getTextureFile() + ";" + rot.x + ";" + rot.y + ";" + rot.z + ";" + rot.w + ";");
+                writer.write("q;" + object.getObjectFile() + ";" + pos.x + ";" + pos.y + ";" + pos.z + ";" + object.getSize() + ";" + name + ";" + object.getTextureFile() + ";" + rot.x + ";" + rot.y + ";" + rot.z + ";" + rot.w + ";"+ object.isVisible() + ";" + object.alwaysLit() + ";");
             }
             for (QollidableQuobject object : qollidableQuobjects) {
                 Quisition pos = object.getPos();
@@ -185,7 +208,7 @@ public class Quworld{
             }
             for (LightSource object : lightSources) {
                 Quisition pos = object.getPos();
-                writer.write("ls;" + pos.x + ";" + pos.y + ";" + pos.z + ";" + object.getPower() + ";");
+                writer.write("ls;" + pos.x + ";" + pos.y + ";" + pos.z + ";" + object.getPower() + ";" + object.getName() + ";");
             }
             System.out.println("SAVED!");
             writer.close();
@@ -193,6 +216,13 @@ public class Quworld{
             io.printStackTrace();
         }
 
+    }
+
+    /**
+     * Save as an untitled.quworld
+     */
+    public void save(){
+        save("untitled");
     }
 
     /**
@@ -218,8 +248,9 @@ public class Quworld{
                     Quobject obj = new Quobject(file, Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()));
                     obj.setName(reader.next());
                     obj.setTexture(reader.next());
-                    obj.alwaysLit(true);
                     obj.rotate(new Quisition(Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next())));
+                    obj.isVisible(Boolean.parseBoolean(reader.next()));
+                    obj.alwaysLit(Boolean.parseBoolean(reader.next()));
                     add(obj);
                 }
                 else if (str.equals("p")){
@@ -237,6 +268,7 @@ public class Quworld{
                 else if (str.equals("ls")){
                     LightSource ls = new LightSource(Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()));
                     ls.setPower(Double.parseDouble(reader.next()));
+                    ls.setName(reader.next());
                     add(ls);
                 }
             }
@@ -281,7 +313,9 @@ public class Quworld{
         return qysicSpeed;
     }
 
-
+    /**
+     * The thread that keeps the quworld updating the ticks
+     */
     private Thread updateThread = new Thread(() -> {
         long start = System.nanoTime();
         long startSecond = System.nanoTime();
@@ -379,6 +413,11 @@ public class Quworld{
         return point;
     }
 
+    /**
+     * Paint the quworld onto the quicture
+     * @param pic quicture to paint on
+     * @param cam the camera currently being use
+     */
     public void paint(Quicture pic, Quamera cam){
         int numThreads = nThreads;
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);

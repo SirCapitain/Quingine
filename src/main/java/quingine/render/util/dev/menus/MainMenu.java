@@ -1,15 +1,18 @@
 package quingine.render.util.dev.menus;
 
 import quingine.render.sim.env.Quworld;
+import quingine.render.sim.env.light.LightSource;
 import quingine.render.sim.env.obj.Quobject;
-import quingine.render.sim.env.obj.prism.Qube;
 import quingine.render.util.dev.DevWindow;
+import quingine.render.util.win.Quomponent;
 
 import javax.swing.*;
 import java.awt.*;
 
 /**
  * The Main menu for the developer tools windows
+ * At least there is a menu that works.
+ * Be grateful for what you get.
  */
 
 public class MainMenu {
@@ -21,6 +24,8 @@ public class MainMenu {
 
     private static JScrollPane objScroll;
     private static JList<String> objList;
+
+    private static Quobject copy;
 
     /**
      * Initialize the Main Menu
@@ -37,8 +42,17 @@ public class MainMenu {
         aQ.setFont(new Font("Serif", Font.BOLD,10));
         menu.add(aQ);
         aQ.addActionListener(e -> {
-            Quobject quobject = new Qube(5,0,0,0);
-            world.add(quobject);
+            int input = JOptionPane.showOptionDialog(menu, "Which type would you like to add?", "Add", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, new String[]{"Quobject", "Light Source"}, null);
+            if (input == 0) {
+                String obj = JOptionPane.showInputDialog(menu,
+                        "Name of quobject folder. (Must be in objects folder)", null);
+                if (obj == null)
+                    return;
+                world.add(new Quobject(obj, 0, 0, 0, 1));
+            }
+            if (input == 1) {
+                world.add(new LightSource());
+            }
             refreshObjectList();
             devWin.update();
         });
@@ -50,10 +64,10 @@ public class MainMenu {
         rQ.setFont(new Font("Serif", Font.BOLD,10));
         menu.add(rQ);
         rQ.addActionListener(e -> {
-            int index = objList.getSelectedIndex();
-            if (world.getQuobjects().isEmpty() || index <= -1)
+            Quomponent quom = getSelectedQuomponent();
+            if (quom == null)
                 return;
-            world.remove(world.getQuobjects().get(index));
+            world.remove(quom);
             refreshObjectList();
             devWin.update();
         });
@@ -77,6 +91,7 @@ public class MainMenu {
         cQ.setFont(new Font("Serif", Font.BOLD,10));
         menu.add(cQ);
         cQ.addActionListener(e -> {
+            copy = getSelectedQuobject();
             devWin.update();
         });
         devWin.setPosOf(cQ, 1.2,.8);
@@ -87,6 +102,10 @@ public class MainMenu {
         pQ.setFont(new Font("Serif", Font.BOLD,10));
         menu.add(pQ);
         pQ.addActionListener(e -> {
+            if (copy == null)
+                return;
+            world.add(new Quobject(copy));
+            refreshObjectList();
             devWin.update();
         });
         devWin.setPosOf(pQ, 1.2,1);
@@ -112,7 +131,11 @@ public class MainMenu {
         sQ.setFont(new Font("Serif", Font.BOLD,10));
         menu.add(sQ);
         sQ.addActionListener(e -> {
-            world.save();
+            String save = JOptionPane.showInputDialog(menu,
+                    "Name of Quworld to save as.", "Untitled");
+            if (save == null)
+                return;
+            world.save(save);
             devWin.update();
         });
         devWin.setPosOf(sQ, 1.2,1.4);
@@ -132,13 +155,46 @@ public class MainMenu {
      * Refresh the list of quobjects in the world.
      */
     public static void refreshObjectList(){
-        String[] data = new String[world.getQuobjects().size()];
+        Quworld world = devWin.getWorld();
+        String[] data = new String[world.getQuobjects().size() + world.getLightSources().size()];
         for (int i = 0; i < world.getQuobjects().size(); i++) {
             String name = world.getQuobjects().get(i).getName();
             if (name == null)
                 name = "Quobject: " + i;
             data[i] = name;
         }
+        for (int i = 0; i < world.getLightSources().size(); i++) {
+            String name = world.getLightSources().get(i).getName();
+            if (name == null)
+                name = "Light: " + i;
+            data[i + world.getQuobjects().size()] = name;
+        }
         objList.setListData(data);
+    }
+
+    /**
+     * Get the currently selected quobject in the list.
+     * @return currently selected quobject, null if none
+     */
+    public static Quobject getSelectedQuobject(){
+        int index = objList.getSelectedIndex();
+        if (index <= -1 || index >= devWin.getWorld().getQuobjects().size())
+            return null;
+        return devWin.getWorld().getQuobjects().get(objList.getSelectedIndex());
+    }
+
+    /**
+     * Get the currently selected quomponent on the list.
+     * @return currently selected quomponent, null if none
+     */
+    public static Quomponent getSelectedQuomponent(){
+        int index = objList.getSelectedIndex();
+        if (index <= -1)
+            return null;
+        int size = devWin.getWorld().getQuobjects().size();
+        if (index < size)
+            return devWin.getWorld().getQuobject(objList.getSelectedIndex());
+        else
+            return devWin.getWorld().getLightSources().get(objList.getSelectedIndex() - size);
     }
 }

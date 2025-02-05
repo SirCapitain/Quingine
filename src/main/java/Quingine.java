@@ -8,7 +8,6 @@ import quingine.render.util.win.Quicture;
 import quingine.render.util.win.Quindow;
 
 import java.awt.*;
-import java.util.Arrays;
 
 
 public class Quingine {
@@ -24,13 +23,7 @@ public class Quingine {
         picture.setBackgroundColor(Color.BLACK);
         window.setFps(0);
         picture.setPercentResolution(.4);
-        window.setTitle("Quingine 25.1.30");
-
-//        Quobject cube = new Quobject("cube",0,0,10,1);
-//        cube.setName("cube");
-//        world.add(cube);
-
-//        world.load("test.quworld");
+        window.setTitle("Quingine 25.2.05");
 
         world.enableDevMode();
 

@@ -2,14 +2,19 @@ package quingine.render.util.dev.menus;
 
 import quingine.render.sim.Math3D;
 import quingine.render.sim.env.Quworld;
+import quingine.render.sim.env.light.LightSource;
 import quingine.render.sim.env.obj.Quobject;
 import quingine.render.util.dev.DevWindow;
+import quingine.render.util.win.Quomponent;
 
 import javax.swing.*;
 import java.awt.*;
 
 /**
  * The Modify menu in the Developer tools window
+ * Look... UI design is not my top skill.
+ * Nor is optimization of said UI.
+ * Gimme a break. First time here.
  */
 
 public class ModifyMenu {
@@ -20,11 +25,19 @@ public class ModifyMenu {
 
     private static JSpinner x, y, z;
     private static JSpinner stepSize;
-
     private static JSpinner yaw, pitch, roll;
     private static JSpinner stepSizeR;
-
     private static JSpinner objSize;
+    private static JSpinner power;
+
+
+    private static JLabel sl, xl, yl, zl;
+    private static JLabel ywl, ptl, rll;
+    private static JLabel sizel;
+    private static JLabel powerl;
+
+    private static JButton st, so;
+    private static JButton back;
 
     private static JTextField nameField;
 
@@ -32,9 +45,6 @@ public class ModifyMenu {
 
     private static JScrollPane objScroll;
     private static JList<String> objList;
-
-    private static JScrollPane attScroll;
-    private static JList<String> attList;
 
     /**
      * Initialize the Modify Menu
@@ -59,23 +69,88 @@ public class ModifyMenu {
      */
     public static void refreshObjectList(){
         Quworld world = devWin.getWorld();
-        String[] data = new String[world.getQuobjects().size()];
+        String[] data = new String[world.getQuobjects().size() + world.getLightSources().size()];
         for (int i = 0; i < world.getQuobjects().size(); i++) {
             String name = world.getQuobjects().get(i).getName();
             if (name == null)
                 name = "Quobject: " + i;
             data[i] = name;
         }
+
+        for (int i = 0; i < world.getLightSources().size(); i++) {
+            String name = world.getLightSources().get(i).getName();
+            if (name == null)
+                name = "Light: " + i;
+            data[i + world.getQuobjects().size()] = name;
+        }
+
         objList.setListData(data);
     }
-    public static void refreshAttList(){
-    }
+
+    /**
+     * Get the currently selected quobject in the list.
+     * @return currently selected quobject, null if none
+     */
     public static Quobject getSelectedQuobject(){
         int index = objList.getSelectedIndex();
-        if (index <= -1)
+        if (index <= -1 || index >= devWin.getWorld().getQuobjects().size())
             return null;
         return devWin.getWorld().getQuobjects().get(objList.getSelectedIndex());
     }
+
+    /**
+     * Get the currently selected quomponent on the list.
+     * @return currently selected quomponent, null if none
+     */
+    public static Quomponent getSelectedQuomponent(){
+        int index = objList.getSelectedIndex();
+        if (index <= -1)
+            return null;
+        int size = devWin.getWorld().getQuobjects().size();
+        if (index < size)
+            return devWin.getWorld().getQuobject(objList.getSelectedIndex());
+        else
+            return devWin.getWorld().getLightSources().get(objList.getSelectedIndex() - size);
+    }
+
+    /**
+     * Set if the position spinners are visible or not
+     * @param visible true if visible, false if not
+     */
+    public static void positionVisible(boolean visible){
+        x.setVisible(visible);
+        xl.setVisible(visible);
+        y.setVisible(visible);
+        yl.setVisible(visible);
+        z.setVisible(visible);
+        zl.setVisible(visible);
+    }
+
+    /**
+     * Set if the rotation spinners are visible or not for the quobject
+     * @param visible true if visible, false if not
+     */
+    public static void rotationVisible(boolean visible){
+        yaw.setVisible(visible);
+        ywl.setVisible(visible);
+        pitch.setVisible(visible);
+        ptl.setVisible(visible);
+        roll.setVisible(visible);
+        rll.setVisible(visible);
+        stepSizeR.setVisible(visible);
+    }
+
+    /**
+     * Set the attributes for a quobject to be visible or not
+     * @param visible true if visible, false if not.
+     */
+    public static void attributesVisible(boolean visible){
+        al.setVisible(visible);
+        av.setVisible(visible);
+        sizel.setVisible(visible);
+        objSize.setVisible(visible);
+    }
+
 
     private static void initPositionSpinners(){
         //StepSize
@@ -95,10 +170,10 @@ public class ModifyMenu {
         devWin.setSizeOf(x, .4,.1);
         devWin.setPosOf(x, 1.4441, .2);
         x.addChangeListener(e -> {
-            Quobject obj = getSelectedQuobject();
-            if (obj == null)
+            Quomponent quom = getSelectedQuomponent();
+            if (quom == null)
                 return;
-            obj.setX((double)x.getValue());
+            quom.setX((double)x.getValue());
         });
 
         //Y
@@ -107,10 +182,10 @@ public class ModifyMenu {
         devWin.setSizeOf(y, .4,.1);
         devWin.setPosOf(y, 1.44, .35);
         y.addChangeListener(e ->{
-            Quobject obj = getSelectedQuobject();
-            if (obj == null)
+            Quomponent quom = getSelectedQuomponent();
+            if (quom == null)
                 return;
-            obj.setY((double)y.getValue());
+            quom.setY((double)y.getValue());
         });
 
         //Z
@@ -119,10 +194,10 @@ public class ModifyMenu {
         devWin.setSizeOf(z, .4,.1);
         devWin.setPosOf(z, 1.44, .5);
         z.addChangeListener(e -> {
-            Quobject obj = getSelectedQuobject();
-            if (obj == null)
+            Quomponent quom = getSelectedQuomponent();
+            if (quom == null)
                 return;
-            obj.setZ((Double)z.getValue());
+            quom.setZ((Double)z.getValue());
         });
     }
     private static void initRotationSpinners(){
@@ -177,47 +252,47 @@ public class ModifyMenu {
         });
     }
     private static void initPositionLabels(){
-        JLabel sl = new JLabel("Step Size");
+        sl = new JLabel("Step Size");
         sl.setFont(new Font("Serif", Font.BOLD,12));
         menu.add(sl);
         devWin.setSizeOf(sl, .43,.11);
         devWin.setPosOf(sl, 1.08, .637);
 
 
-        JLabel xl = new JLabel("X ");
+        xl = new JLabel("X ");
         menu.add(xl);
         devWin.setSizeOf(xl, .15,.11);
         devWin.setPosOf(xl, 1.35, .175);
 
-        JLabel yl = new JLabel("Y ");
+        yl = new JLabel("Y ");
         menu.add(yl);
         devWin.setSizeOf(yl, .15,.11);
         devWin.setPosOf(yl, 1.35, .325);
 
-        JLabel zl = new JLabel("Z ");
+        zl = new JLabel("Z ");
         menu.add(zl);
         devWin.setSizeOf(zl, .15,.11);
         devWin.setPosOf(zl, 1.35, .475);
     }
     private static void initRotationLabels(){
-        JLabel yl = new JLabel("Yaw ");
-        menu.add(yl);
-        devWin.setSizeOf(yl, .25,.11);
-        devWin.setPosOf(yl, .6, .175);
+        ywl = new JLabel("Yaw ");
+        menu.add(ywl);
+        devWin.setSizeOf(ywl, .25,.11);
+        devWin.setPosOf(ywl, .6, .175);
 
-        JLabel pl = new JLabel("Pitch ");
-        menu.add(pl);
-        devWin.setSizeOf(pl, .25,.11);
-        devWin.setPosOf(pl, .6, .325);
+        ptl = new JLabel("Pitch ");
+        menu.add(ptl);
+        devWin.setSizeOf(ptl, .25,.11);
+        devWin.setPosOf(ptl, .6, .325);
 
-        JLabel rl = new JLabel("Roll ");
-        menu.add(rl);
-        devWin.setSizeOf(rl, .25,.11);
-        devWin.setPosOf(rl, .6, .475);
+        rll = new JLabel("Roll ");
+        menu.add(rll);
+        devWin.setSizeOf(rll, .25,.11);
+        devWin.setPosOf(rll, .6, .475);
     }
     private static void initButtons(){
         //Texture
-        JButton st = new JButton("Set Texture");
+        st = new JButton("Set Texture");
         st.setFont(new Font("Serif", Font.BOLD,10));
         menu.add(st);
         devWin.setSizeOf(st, .6,.1);
@@ -232,7 +307,7 @@ public class ModifyMenu {
         });
 
         //Object
-        JButton so = new JButton("Set Quobject");
+        so = new JButton("Set Quobject");
         so.setFont(new Font("Serif", Font.BOLD,10));
         menu.add(so);
         devWin.setSizeOf(so, .6,.1);
@@ -252,10 +327,10 @@ public class ModifyMenu {
         devWin.setSizeOf(nameField, 1.22,.1);
         devWin.setPosOf(nameField, .64, .95);
         nameField.addActionListener(e -> {
-            Quobject obj = getSelectedQuobject();
-            if (obj == null)
+            Quomponent quom = getSelectedQuomponent();
+            if (quom == null)
                 return;
-            obj.setName(nameField.getText());
+            quom.setName(nameField.getText());
             refreshObjectList();
         });
 
@@ -271,13 +346,30 @@ public class ModifyMenu {
             obj.setSize((double)objSize.getValue());
         });
 
-        JLabel sl = new JLabel("Size - ");
-        menu.add(sl);
-        devWin.setSizeOf(sl, .25,.1);
-        devWin.setPosOf(sl, .9, 1.1);
+        sizel = new JLabel("Size - ");
+        menu.add(sizel);
+        devWin.setSizeOf(sizel, .25,.1);
+        devWin.setPosOf(sizel, .9, 1.1);
+
+        power = new JSpinner(new SpinnerNumberModel(1, Integer.MIN_VALUE,Double.MAX_VALUE,1));
+        menu.add(power);
+        devWin.setSizeOf(power, .5,.1);
+        devWin.setPosOf(power, 1.36, 1.1);
+        power.addChangeListener(e -> {
+            Quomponent quom = getSelectedQuomponent();
+            if (quom == null)
+                return;
+            if (quom instanceof LightSource ls)
+                ls.setPower((double)power.getValue());
+        });
+
+        powerl = new JLabel("Power - ");
+        menu.add(powerl);
+        devWin.setSizeOf(powerl, .35,.1);
+        devWin.setPosOf(powerl, .85, 1.1);
 
         //Back
-        JButton back = new JButton("Back");
+        back = new JButton("Back");
         menu.add(back);
         devWin.setSizeOf(back, .5,.1);
         devWin.setPosOf(back, 1.2, 1.7);
@@ -287,20 +379,32 @@ public class ModifyMenu {
         //Object List
         objList = new JList<>();
         objList.addListSelectionListener(e -> {
-            Quobject obj = getSelectedQuobject();
-            if (obj == null)
+            Quomponent quom = getSelectedQuomponent();
+            if (quom == null)
                 return;
-            x.setValue(obj.getPos().x);
-            y.setValue(obj.getPos().y);
-            z.setValue(obj.getPos().z);
-            objSize.setValue(obj.getSize());
-            double[] rot = Math3D.quaternionToEuler(obj.getRotation());
-            yaw.setValue(Math.toDegrees(rot[0]));
-            pitch.setValue(Math.toDegrees(rot[1]));
-            roll.setValue(Math.toDegrees(rot[2]));
-            nameField.setText(obj.getName());
-            al.setSelected(obj.alwaysLit());
-            av.setSelected(obj.isVisible());
+            if (quom instanceof Quobject obj) {
+                rotationVisible(true);
+                attributesVisible(true);
+                so.setVisible(true);
+                st.setVisible(true);
+                objSize.setValue(obj.getSize());
+                double[] rot = Math3D.quaternionToEuler(obj.getRotation());
+                yaw.setValue(Math.toDegrees(rot[0]));
+                pitch.setValue(Math.toDegrees(rot[1]));
+                roll.setValue(Math.toDegrees(rot[2]));
+                al.setSelected(obj.alwaysLit());
+                av.setSelected(obj.isVisible());
+            } else if (quom instanceof LightSource ls) {
+                rotationVisible(false);
+                attributesVisible(false);
+                so.setVisible(false);
+                st.setVisible(false);
+                power.setValue(ls.getPower());
+            }
+            x.setValue(quom.getPos().x);
+            y.setValue(quom.getPos().y);
+            z.setValue(quom.getPos().z);
+            nameField.setText(quom.getName());
         });
         objScroll = new JScrollPane(objList);
         devWin.setSizeOf(objScroll, .6,1.7);

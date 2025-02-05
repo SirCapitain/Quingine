@@ -29,8 +29,6 @@ public class Quobject extends Quomponent {
     private String textureFile;
     private String objectFile;
 
-    private String name;
-
     private Quisition rotation = new Quisition();
 
     private Quisition[] points;
@@ -76,6 +74,24 @@ public class Quobject extends Quomponent {
     public Quobject(Quisition[] points, double x, double y, double z){
         super(x, y, z);
         setPoints(points);
+    }
+
+    /**
+     * Create a new quobject based off of another
+     * *NOTE* This only works with .obj files!
+     * @param object
+     */
+    public Quobject(Quobject object){
+        super(object.getPos());
+        if (object.getObjectFile() == null)
+            return;
+        setName(object.getName().concat(" - copy"));
+        loadQuobjectFile(object.getObjectFile());
+        setTexture(object.getTextureFile());
+        setRotation(object.getRotation());
+        setSize(object.getSize());
+        alwaysLit(object.alwaysLit());
+        isVisible(object.isVisible());
     }
 
     /**
@@ -288,7 +304,7 @@ public class Quobject extends Quomponent {
      * Set the list of UV coordinates for the quobject.
      * @param points 2D array e.g. {{u,v},{u2,v2}}
      */
-    public void setTexturePoints(Double[][] points){
+    public void setTexturePoints(double[][] points){
         texPoints = new double[points.length][2];
         for (int i = 0; i < texPoints.length/2; i++) {
             texPoints[i][0] = points[i][0];
@@ -341,6 +357,14 @@ public class Quobject extends Quomponent {
      */
     public double[][] getTexturePoints(int face){
         return texFaces[face].clone();
+    }
+
+    /**
+     * Get all the texture points of the quobject
+     * @return double[][] {{u1, v1}, {u2, v2}...}
+     */
+    public double[][] getTexturePoints() {
+        return texPoints;
     }
 
     /**
@@ -546,6 +570,7 @@ public class Quobject extends Quomponent {
      * Set the individual x component of the quobject in 3-D space
      * @param x position in 3D space
      */
+    @Override
     public synchronized void setX(double x){
         setPos(x, getPos().y, getPos().z);
     }
@@ -554,6 +579,7 @@ public class Quobject extends Quomponent {
      * Set the individual y component of the quobject in 3-D space
      * @param y position in 3D space
      */
+    @Override
     public synchronized void setY(double y){
         setPos(getPos().x, y, getPos().z);
     }
@@ -562,6 +588,7 @@ public class Quobject extends Quomponent {
      * Set the individual z component of the quobject in 3-D space
      * @param z position in 3D space
      */
+    @Override
     public synchronized void setZ(double z){
         setPos(getPos().x, getPos().y, z);
     }
@@ -647,24 +674,6 @@ public class Quobject extends Quomponent {
      */
     public boolean alwaysLit(){
         return alwaysLit;
-    }
-
-    /**
-     * Set the name of the quobject so it is easier to find.
-     * @param name any String
-     */
-    public void setName(String name){
-        this.name = null;
-        if (!name.equals("null"))
-            this.name = name;
-    }
-
-    /**
-     * Get the name the quobject
-     * @return String
-     */
-    public String getName(){
-        return name;
     }
 
     /**
@@ -767,6 +776,7 @@ public class Quobject extends Quomponent {
         }else
             for (int i = 0; i < points.length; i++)
                 points[i].lv = 1;
+
         //Translate Points
         Quisition[] newPoints = new Quisition[points.length];
         for (int i = 0; i < points.length; i++) {

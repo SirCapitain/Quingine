@@ -9,6 +9,7 @@ import javax.swing.*;
 /**
  * THE Developer window tool. Holds menus and stuff.
  * Quite useful for developing stuff.
+ * Not quite optimized
  */
 
 public class DevWindow extends Quindow {
@@ -31,7 +32,7 @@ public class DevWindow extends Quindow {
      */
     private void init(){
         setSize(300,500);
-        setName("Dev");
+        setTitle("Dev");
         MainMenu.init(this);
         add(MainMenu.menu);
         ModifyMenu.init(this);

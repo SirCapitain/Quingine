@@ -12,6 +12,9 @@ public class Quomponent {
 
     private Quisition position = new Quisition();
 
+    private String name;
+
+
     /**
      * The lame way of making a quomponent.
      * The positional values are set to 0.
@@ -71,6 +74,30 @@ public class Quomponent {
     }
 
     /**
+     * Set the individual x component of the quobject in 3-D space
+     * @param x position in 3D space
+     */
+    public void setX(double x){
+        setPos(x, getPos().y, getPos().z);
+    }
+
+    /**
+     * Set the individual y component of the quobject in 3-D space
+     * @param y position in 3D space
+     */
+    public void setY(double y){
+        setPos(getPos().x, y, getPos().z);
+    }
+
+    /**
+     * Set the individual z component of the quobject in 3-D space
+     * @param z position in 3D space
+     */
+    public void setZ(double z){
+        setPos(getPos().x, getPos().y, z);
+    }
+
+    /**
      * Getting the current position of the quomponent.
      * @return current position in 3D space.
      */
@@ -78,6 +105,24 @@ public class Quomponent {
         if (position != null)
             return position;
         return null;
+    }
+
+    /**
+     * Set the name of the quobject so it is easier to find.
+     * @param name any String
+     */
+    public void setName(String name){
+        this.name = null;
+        if (!name.equals("null"))
+            this.name = name;
+    }
+
+    /**
+     * Get the name the quobject
+     * @return String
+     */
+    public String getName(){
+        return name;
     }
 
     /**

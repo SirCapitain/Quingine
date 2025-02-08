@@ -1,5 +1,6 @@
 package quingine.render.sim;
 
+import quingine.render.sim.pos.Quaternion;
 import quingine.render.sim.pos.Quisition;
 
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ public class Math3D {
         if (Double.isNaN(vx) || Double.isNaN(vy) || Double.isNaN(vz))
             return;
         double sin = Math.sin(theta*.5);
-        rotate(pos, origin, new Quisition(vx*sin, vy*sin, vz*sin, Math.cos(theta*.5)));
+        rotate(pos, origin, new Quaternion(vx*sin, vy*sin, vz*sin, Math.cos(theta*.5)));
     }
 
     /**
@@ -37,7 +38,7 @@ public class Math3D {
      * @param origin the point the other point is being rotated around
      * @param quaternion a Quisition
      */
-    public static void rotate(Quisition point, Quisition origin, Quisition quaternion){
+    public static void rotate(Quisition point, Quisition origin, Quaternion quaternion){
         double x = point.x - origin.x;
         double y = point.y - origin.y;
         double z = point.z - origin.z;
@@ -63,9 +64,9 @@ public class Math3D {
      * in real life. Order really does matter.
      * @param quat1 The first quaternion
      * @param quat2 The second quaternion
-     * @return a new Quaternion combined in the form of a Quisition
+     * @return a new Quaternion combined
      */
-    public static Quisition combineQuaternions(Quisition quat1, Quisition quat2){
+    public static Quaternion combineQuaternions(Quaternion quat1, Quaternion quat2){
         double a1 = quat1.w;
         double vx1 = quat1.x;
         double vy1 = quat1.y;
@@ -74,7 +75,7 @@ public class Math3D {
         double vx2 = quat2.x;
         double vy2 = quat2.y;
         double vz2 = quat2.z;
-        return new Quisition(a1*vx2 + vx1*a2 + vy1*vz2 - vz1*vy2, a1*vy2 - vx1*vz2 + vy1*a2 + vz1*vx2, a1*vz2 + vx1*vy2 - vy1*vx2 + vz1*a2, a1*a2 - vx1*vx2 - vy1*vy2 - vz1*vz2);
+        return new Quaternion(a1*vx2 + vx1*a2 + vy1*vz2 - vz1*vy2, a1*vy2 - vx1*vz2 + vy1*a2 + vz1*vx2, a1*vz2 + vx1*vy2 - vy1*vx2 + vz1*a2, a1*a2 - vx1*vx2 - vy1*vy2 - vz1*vz2);
     }
 
     /**
@@ -85,7 +86,7 @@ public class Math3D {
      * @param roll rotation around the z-axis
      * @return a Quaternion in the form of a Quisition
      */
-    public static Quisition eulerToQuaternion(double yaw, double pitch, double roll){
+    public static Quaternion eulerToQuaternion(double yaw, double pitch, double roll){
         yaw *= .5;
         pitch *= .5;
         roll *= .5;
@@ -107,7 +108,7 @@ public class Math3D {
             y = 0;
         if (!Double.isFinite(z))
             z = 0;
-        return new Quisition(y,x,z,w);//Yeah, it's meant to be in that order.
+        return new Quaternion(y,x,z,w);//Yeah, it's meant to be in that order.
 
     }
 
@@ -117,7 +118,7 @@ public class Math3D {
      * @param quaternion Quisition representing a quaternion
      * @return new double[] {yaw, pitch, roll} (in radians)
      */
-    public static double[] quaternionToEuler(Quisition quaternion){
+    public static double[] quaternionToEuler(Quaternion quaternion){
         double x = quaternion.x;
         double y = quaternion.y;
         double z = quaternion.z;
@@ -240,6 +241,19 @@ public class Math3D {
     }
 
     /**
+     * Get the normal vector of a set of three points
+     * @param v1 Quisition in 3D space
+     * @param v2 Quisition in 3D space
+     * @param v3 Quisition in 3D space
+     * @return a normalized Quisition representing the normal vector
+     */
+    public static Quisition getNormal(Quisition v1, Quisition v2, Quisition v3){
+        Quisition cross = getCrossProduct(v2, v1, v3);
+        cross.normalize();
+        return cross;
+    }
+
+    /**
      * Get the dot product of two vectors
      * @param vec1 first vector
      * @param vec2 second vector
@@ -308,20 +322,22 @@ public class Math3D {
     /**
      * Calculate the z value of a plane using a list of points
      * and an x and y.
-     * @param points list of points of the plane
+     * @param p1 point of plane
+     * @param p2 point of plane
+     * @param p3 point of plane
      * @param x value in the 3D world
      * @param y value in the 3D world
      * @return the z value of the position.
      */
-    public static double calcZ(Quisition[] points, double x, double y){
-        Quisition vec = calcVector(points[0], points[1], points[2]);
+    public static double calcZ(Quisition p1, Quisition p2, Quisition p3, double x, double y){
+        Quisition vec = calcVector(p1, p2, p3);
         double z;
         if (vec.z == 0)
-            z = points[0].z;
+            z = p1.z;
         else
-            z = (1/vec.z)*(getDotProduct(vec, points[0]) - vec.x*x - vec.y*y);
+            z = (1/vec.z)*(getDotProduct(vec, p1) - vec.x*x - vec.y*y);
         if (Double.isInfinite(z))
-            z = points[0].z;
+            z = p1.z;
         return z;
     }
 
@@ -341,7 +357,7 @@ public class Math3D {
      * @return a double[] in the form of {ax, by, cz, d}
      */
     public static double[] get2DLightMap(Quisition[] points){
-        Quisition vec = new Quisition((points[1].y - points[0].y)*(points[2].lv - points[0].lv) - (points[1].lv - points[0].lv)*(points[2].y - points[0].y), (points[1].lv - points[0].lv)*(points[2].x - points[0].x) - (points[1].x - points[0].x)*(points[2].lv - points[0].lv), (points[1].x - points[0].x)*(points[2].y - points[0].y) - (points[1].y - points[0].y)*(points[2].x - points[0].x));
+        Quisition vec = new Quisition((points[1].y - points[0].y)*(points[2].data[3] - points[0].data[3]) - (points[1].data[3] - points[0].data[3])*(points[2].y - points[0].y), (points[1].data[3] - points[0].data[3])*(points[2].x - points[0].x) - (points[1].x - points[0].x)*(points[2].data[3] - points[0].data[3]), (points[1].x - points[0].x)*(points[2].y - points[0].y) - (points[1].y - points[0].y)*(points[2].x - points[0].x));
         return new double[]{vec.x, vec.y, vec.z, -getDotProduct(vec, points[0])};
     }
 
@@ -358,8 +374,12 @@ public class Math3D {
         point.subtract(end);
         double d = getDotProduct(planeNormal, planePos);
         double t = (d - getDotProduct(planeNormal, end)) / getDotProduct(planeNormal, point);
-        Quisition intPoint = new Quisition(end.x + point.x*t, end.y + point.y*t, end.z + point.z*t, end.w + point.w*t, end.getUV()[0] + (start.getUV()[0] - end.getUV()[0])*t, end.getUV()[1] + (start.getUV()[1] - end.getUV()[1])*t);
-        intPoint.lv = end.lv + (start.lv - end.lv)*t;
+        Quisition intPoint = new Quisition(end.x + point.x*t, end.y + point.y*t, end.z + point.z*t);
+        if (end.data != null && start.data != null) {
+            intPoint.data = new double[4];
+            for (int i = 0; i < 4; i++)
+                intPoint.data[i] = end.data[i] + (start.data[i] - end.data[i]) * t;//Same for each piece of data
+        }
         return intPoint;
     }
 
@@ -386,36 +406,61 @@ public class Math3D {
 
     /**
      * Takes a list of points in a clips them according the plane specified.
-     * @param points list of points that need to be clipped
+     * It will clip your points.
+     * @param points list of points that need to be clipped.
      * @param planePos The position of the plane.
      * @param planeNormal The normal vector of the plane
-     * @return new list of positions that are clipped.
      */
-    public static Quisition[][]clipObject(Quisition[] points, Quisition planePos, Quisition planeNormal){
-        ArrayList<Quisition> outsidePoints = new ArrayList<>();
-        planeNormal = normalize(planeNormal);
-        for (int i = 0; i < 3; i++)
-            if (planeNormal.x * points[i].x + planeNormal.y * points[i].y + planeNormal.z * points[i].z - getDotProduct(planeNormal, planePos) <= 0)
-                outsidePoints.add(points[i]);
+    public static void clipObject(ArrayList<Quisition> points, Quisition planePos, Quisition planeNormal){
+        if (points.isEmpty())
+            return;
+        int totalOutside;
+        Quisition out1;
+        Quisition out2;
+        Quisition in1;
+        Quisition in2;
+        int size = points.size()/3;
+        for (int j = 0; j < size; j++) {
+            totalOutside = 0;
+            out1 = null;
+            out2 = null;
+            in1 = null;
+            in2 = null;
+            for (int i = 0; i < 3; i++) {
+                if (getDotProduct(planeNormal, points.get(i)) - getDotProduct(planeNormal, planePos) <= 0) {
+                    totalOutside++;
+                    if (out1 == null)
+                        out1 = points.get(i);
+                    else
+                        out2 = points.get(i);
+                } else {
+                    if (in1 == null)
+                        in1 = points.get(i);
+                    else
+                        in2 = points.get(i);
+                }
+            }
+            if (totalOutside == 0)
+                return;
+            points.removeFirst();
+            points.removeFirst();
+            points.removeFirst();
+            if (totalOutside == 2) {
+                points.add(getIntersectionPoint(planePos, planeNormal, in1, out1));
+                points.add(getIntersectionPoint(planePos, planeNormal, in1, out2));
+                points.add(in1);
+            } else if (totalOutside == 1) {
+                Quisition clip1 = getIntersectionPoint(planePos, planeNormal, in1, out1);
+                Quisition clip2 = getIntersectionPoint(planePos, planeNormal, in2, out1);
+                points.add(clip1);
+                points.add(clip2);
+                points.add(in1);
 
-        ArrayList<Quisition> clippedPoints = new ArrayList<>();
-        ArrayList<Quisition> insidePoints = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {//Determine which points are intersecting the plane
-            if (outsidePoints.contains(points[i]))
-                continue;
-            insidePoints.add(points[i]);
-            for (Quisition outsidePoint : outsidePoints)
-                clippedPoints.add(Math3D.getIntersectionPoint(planePos, planeNormal, points[i], outsidePoint));
+                points.add(new Quisition(clip2));
+                points.add(new Quisition(in1));
+                points.add(in2);
+            }
         }
-        //Set the points
-        if (outsidePoints.size() == 1)
-            return new Quisition[][]{new Quisition[]{clippedPoints.get(0), clippedPoints.get(1), insidePoints.get(0)}, new Quisition[]{clippedPoints.get(1), insidePoints.get(0), insidePoints.get(1)}};
-        else if (outsidePoints.size() == 2)
-            return new Quisition[][]{new Quisition[]{clippedPoints.get(0), clippedPoints.get(1), insidePoints.get(0)}};
-        else if (outsidePoints.size() == 3)
-            return null;
-        else
-            return new Quisition[][]{points.clone()};
     }
 
     /**

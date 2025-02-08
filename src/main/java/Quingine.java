@@ -1,9 +1,5 @@
-import quingine.render.sim.Math3D;
-import quingine.render.sim.cam.Quamera;
 import quingine.render.sim.env.Quworld;
 import quingine.render.sim.env.obj.Quobject;
-import quingine.render.sim.env.obj.prism.Qube;
-import quingine.render.sim.pos.Quisition;
 import quingine.render.util.win.Quicture;
 import quingine.render.util.win.Quindow;
 
@@ -23,9 +19,17 @@ public class Quingine {
         picture.setBackgroundColor(Color.BLACK);
         window.setFps(0);
         picture.setPercentResolution(.4);
-        window.setTitle("Quingine 25.2.05");
+        window.setTitle("Quingine 25.2.08");
+
+        int size = 10;
+        for (int i = 0; i < size; i++)
+            for (int j = 0; j < size; j++){
+                Quobject obj = new Quobject("RubixCube", i*6-10, -10,j*6+10, 100);
+                world.add(obj);
+            }
 
         world.enableDevMode();
+
 
         //Camera
         double speed = .25;

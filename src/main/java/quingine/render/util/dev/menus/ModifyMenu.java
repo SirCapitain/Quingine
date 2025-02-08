@@ -300,6 +300,8 @@ public class ModifyMenu {
         st.addActionListener(e ->{
             String texture = JOptionPane.showInputDialog(menu,
                     "Texture Name + filetype (Must be in textures folder)", null);
+            if (texture == null)
+                return;
             Quobject obj = getSelectedQuobject();
             if (obj == null)
                 return;
@@ -315,6 +317,8 @@ public class ModifyMenu {
         so.addActionListener(e ->{
             String object = JOptionPane.showInputDialog(menu,
                     "Object File (must be in objects folder)", null);
+            if (object == null)
+                return;
             Quobject obj = getSelectedQuobject();
             if (obj == null)
                 return;
@@ -362,9 +366,10 @@ public class ModifyMenu {
             if (quom instanceof LightSource ls)
                 ls.setPower((double)power.getValue());
         });
-
+        power.setVisible(false);
         powerl = new JLabel("Power - ");
         menu.add(powerl);
+        powerl.setVisible(false);
         devWin.setSizeOf(powerl, .35,.1);
         devWin.setPosOf(powerl, .85, 1.1);
 

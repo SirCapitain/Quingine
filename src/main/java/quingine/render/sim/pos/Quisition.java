@@ -8,18 +8,16 @@ import quingine.render.sim.Math3D;
 
 public class Quisition {
 
-    public double w, x, y, z;
-    public double u, v;
+    public double x, y, z;
 
-    public double lv = 1;
-
+    public double[] data = null;
 
     /**
      * Not a fun way to make a point but it is a fast way.
      * Creates a point at (0, 0, 0)
      */
     public Quisition(){
-        setPos(0,0,0,1);
+        setPos(0,0,0);
     }
 
     /**
@@ -27,10 +25,7 @@ public class Quisition {
      * @param pos list of doubles >= 3 in length
      */
     public Quisition(double[] pos){
-        if (pos.length < 4)
-            setPos(pos[0], pos[1], pos[2]);
-        else
-            setPos(pos[0], pos[1], pos[2], pos[3]);
+        setPos(pos[0], pos[1], pos[2]);
     }
 
     /**
@@ -39,7 +34,8 @@ public class Quisition {
      */
     public Quisition(Quisition pos){
         setPos(pos);
-        setUV(pos.getUV());
+        if (pos.data != null)
+            data = pos.data.clone();
     }
 
 
@@ -50,23 +46,7 @@ public class Quisition {
      * @param z position in 3D world
      */
     public Quisition(double x, double y, double z){
-        setPos(x, y, z, 1);
-    }
-
-    /**
-     * Initialize a quisition and its w component
-     * @param x point in 3D space
-     * @param y point in 3D space
-     * @param z point in 3D space
-     * @param w something
-     */
-    public Quisition(double x, double y, double z, double w){
-        setPos(x, y, z, w);
-    }
-
-    public Quisition(double x, double y, double z, double w, double u, double v){
-        setPos(x, y, z, w);
-        setUV(new double[]{u, v});
+        setPos(x, y, z);
     }
 
     /**
@@ -82,26 +62,11 @@ public class Quisition {
     }
 
     /**
-     * Set the position of a quisition and its w component
-     * @param x point in 3D space
-     * @param y point in 3D space
-     * @param z point in 3D space
-     * @param w something
-     */
-    public synchronized void setPos(double x, double y, double z, double w){
-        this.w = w;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
-
-    /**
      * Set the position of a quisition using another quisition
      * This copies the info from one to the other
      * @param pos any quisition you want to copy over
      */
     public synchronized void setPos(Quisition pos){
-        w = pos.w;
         x = pos.x;
         y = pos.y;
         z = pos.z;
@@ -112,7 +77,6 @@ public class Quisition {
      * @param pos another position you want to add.
      */
     public synchronized void add(Quisition pos){
-        w += pos.w;
         x += pos.x;
         y += pos.y;
         z += pos.z;
@@ -135,7 +99,6 @@ public class Quisition {
      * @param value number to be added to the x, y, and z
      */
     public synchronized void add(double value){
-        w += value;
         x += value;
         y += value;
         z += value;
@@ -146,7 +109,6 @@ public class Quisition {
      * @param pos another position you want to take from the current.
      */
     public synchronized void subtract(Quisition pos){
-        w -= pos.w;
         x -= pos.x;
         y -= pos.y;
         z -= pos.z;
@@ -248,14 +210,8 @@ public class Quisition {
      * @return true if equals, false if not
      */
     public boolean sameAs(Quisition pos){
-        return w == pos.w && x == pos.x && y == pos.y && z == pos.z;
+        return x == pos.x && y == pos.y && z == pos.z;
     }
-
-    /**
-     * Change the w component by a specific value
-     * @param value adds a value to w.
-     */
-    public void changeWBy(double value){ w += value;}
 
     /**
      * Chance x by a specific value.
@@ -322,33 +278,6 @@ public class Quisition {
      */
     public double getDistance(Quisition pos){
         return Math.sqrt(Math.pow(pos.x - x,2) + Math.pow(pos.y - y,2) + Math.pow(pos.z - z,2));
-    }
-
-    /**
-     * Set the UV of the position for texture usage.
-     * @param u  units from left most side of image
-     * @param v units down from top most side of image
-     */
-    public void setUV(double u, double v){
-        this.u = u;
-        this.v = v;
-    }
-
-    /**
-     * Set the uv coordinates based off a double[]
-     * @param uv double[]{u, v}
-     */
-    public void setUV(double[] uv){
-        u = uv[0];
-        v = uv[1];
-    }
-
-    /**
-     * Get the UV coordinates of the position
-     * @return double[]{u, v}
-     */
-    public double[] getUV(){
-        return new double[]{u, v};
     }
 
     /**

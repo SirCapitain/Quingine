@@ -1,6 +1,7 @@
 package quingine.render.sim.env.obj;
 
 import quingine.render.sim.cam.Quamera;
+import quingine.render.sim.pos.Quaternion;
 import quingine.render.sim.pos.Quisition;
 import quingine.render.util.Quaphics;
 import quingine.render.util.win.Quicture;
@@ -29,7 +30,7 @@ public class Quobject extends Quomponent {
     private String textureFile;
     private String objectFile;
 
-    private Quisition rotation = new Quisition();
+    private Quaternion rotation = new Quaternion();
 
     private Quisition[] points;
     private Quisition[][] faces;
@@ -85,7 +86,8 @@ public class Quobject extends Quomponent {
         super(object.getPos());
         if (object.getObjectFile() == null)
             return;
-        setName(object.getName().concat(" - copy"));
+        if (object.getName() != null)
+            setName(object.getName().concat(" - copy"));
         loadQuobjectFile(object.getObjectFile());
         setTexture(object.getTextureFile());
         setRotation(object.getRotation());
@@ -399,7 +401,7 @@ public class Quobject extends Quomponent {
      */
     public synchronized void rotate(Quisition pos, double vx, double vy, double vz, double theta) {
         double sin = Math.sin(theta*.5);
-        rotate(new Quisition(vx*sin,vy*sin,vz*sin,Math.cos(theta*.5)), pos);
+        rotate(new Quaternion(vx*sin,vy*sin,vz*sin,Math.cos(theta*.5)), pos);
     }
 
     /**
@@ -407,7 +409,7 @@ public class Quobject extends Quomponent {
      * @param quaternion a Quisition to represent the quaternion
      * @param pos a Quisition that represents what the quobject will rotate around
      */
-    public synchronized void rotate(Quisition quaternion, Quisition pos){
+    public synchronized void rotate(Quaternion quaternion, Quisition pos){
         rotation.setPos(Math3D.combineQuaternions(quaternion, rotation));
         for (Quisition point : tempPoints)
             Math3D.rotate(point, pos, quaternion);
@@ -417,7 +419,7 @@ public class Quobject extends Quomponent {
      * Rotate a quobject based off a quaternion.
      * @param quaternion a Quisition to represent the quaternion
      */
-    public synchronized void rotate(Quisition quaternion){
+    public synchronized void rotate(Quaternion quaternion){
         rotate(quaternion, getPos());
     }
 
@@ -437,10 +439,10 @@ public class Quobject extends Quomponent {
      * @param quaternion a quisition to represent the quaternion
      * @param point a quisition to rotate around
      */
-    public synchronized void setRotation(Quisition quaternion, Quisition point){
-        Quisition rot = new Quisition(rotation);
+    public synchronized void setRotation(Quaternion quaternion, Quisition point){
+        Quaternion rot = new Quaternion(rotation);
         rot.w *= -1;
-        rotation = new Quisition(quaternion);
+        rotation = new Quaternion(quaternion);
         rot = Math3D.combineQuaternions(quaternion, rot);
         for (Quisition p : tempPoints)
             Math3D.rotate(p, point, rot);
@@ -457,7 +459,7 @@ public class Quobject extends Quomponent {
      */
     public synchronized void setRotation(Quisition point, double vx, double vy, double vz, double theta) {
         double sin = Math.sin(theta*.5);
-        setRotation(new Quisition(vx*sin,vy*sin,vz*sin,Math.cos(theta*.5)), point);
+        setRotation(new Quaternion(vx*sin,vy*sin,vz*sin,Math.cos(theta*.5)), point);
     }
 
     /**
@@ -470,7 +472,7 @@ public class Quobject extends Quomponent {
      */
     public synchronized void setRotation(double vx, double vy, double vz, double theta) {
         double sin = Math.sin(theta*.5);
-        setRotation(new Quisition(vx*sin,vy*sin,vz*sin,Math.cos(theta*.5)), getPos());
+        setRotation(new Quaternion(vx*sin,vy*sin,vz*sin,Math.cos(theta*.5)), getPos());
     }
 
     /**
@@ -482,7 +484,7 @@ public class Quobject extends Quomponent {
      * @param point A quisition to rotate around
      */
     public synchronized void setRotation(double yaw, double pitch, double roll, Quisition point) {
-        Quisition quaternion = Math3D.eulerToQuaternion(yaw, pitch, roll);
+        Quaternion quaternion = Math3D.eulerToQuaternion(yaw, pitch, roll);
         setRotation(quaternion, point);
     }
 
@@ -501,7 +503,7 @@ public class Quobject extends Quomponent {
      * Set the rotation of the quobject based off a quaternion
      * @param quaternion a Quisition to represent the quaternion
      */
-    public synchronized void setRotation(Quisition quaternion){
+    public synchronized void setRotation(Quaternion quaternion){
        setRotation(quaternion, getPos());
     }
 
@@ -509,7 +511,7 @@ public class Quobject extends Quomponent {
      * Get the current rotation of a quobject.
      * @return a Quaternion in the form of a Quisiition.
      */
-    public Quisition getRotation(){
+    public Quaternion getRotation(){
         return rotation;
     }
 
@@ -517,7 +519,7 @@ public class Quobject extends Quomponent {
      * Get the point on a quobject where a vector intersects
      * @param origin where the vector came from
      * @param vector where the vector is going (the vector itself)
-     * @return new quisition of the points (point.v = index of plane in the quobject)
+     * @return new quisition of the points (point.data[1] = index of plane in the quobject)
      */
 
     public Quisition getVectorIntersectionPoint(Quisition origin, Quisition vector){
@@ -531,9 +533,9 @@ public class Quobject extends Quomponent {
             if (testPoint == null || Math3D.getDist(origin, testPoint) >= Math3D.getDist(origin, point))
                 continue;
             point = new Quisition(testPoint);
-            point.v = i;
+            point.data = new double[]{0,i};
         }
-        if (point.z == Integer.MAX_VALUE || Math3D.getRadiansBetween(Math3D.getNormal(getFaces()[(int)point.v]), vector) >= Math.PI/4)
+        if (point.z == Integer.MAX_VALUE || Math3D.getRadiansBetween(Math3D.getNormal(getFaces()[(int)point.data[0]]), vector) >= Math.PI/4)
             return null;
         return point;
     }
@@ -713,10 +715,7 @@ public class Quobject extends Quomponent {
         Quisition thisPoint = getVectorIntersectionPoint(object.getPos(), normal);
         if (thisPoint == null || objectPoint == null)
             return false;
-        if (thisPoint.getDistance(object.getPos()) <= objectPoint.getDistance(object.getPos()))
-            return true;
-        else
-            return false;
+        return thisPoint.getDistance(object.getPos()) <= objectPoint.getDistance(object.getPos());
     }
 
     /**
@@ -725,7 +724,7 @@ public class Quobject extends Quomponent {
     public void reload(){
         if (objectFile != null)
             loadQuobjectFile(objectFile);
-        rotation = new Quisition();
+        rotation = new Quaternion();
     }
 
     /**
@@ -757,63 +756,64 @@ public class Quobject extends Quomponent {
      * @param texturePoints the UV points of the texture.
      */
     public void paintPlane(Quicture pic, Quamera camera, Quisition[] points, double[][] texturePoints){
+        //Copy the points
+        ArrayList<Quisition> newPoints = new ArrayList<>();
+
         int num = 0;
         for (int i = 0; i < points.length; i++) {
-            points[i].lv = 0; //also reset light level
-            if (points[i].getDistance(camera.getPos()) > camera.getzFar())
+            Quisition p = new Quisition(points[i]);
+            newPoints.add(p);
+            if (texturePoints != null)
+                p.data = new double[]{1,texturePoints[i][0], texturePoints[i][1], 0};
+            else
+                p.data = new double[]{1, 0, 0, 0};
+            if (p.getDistance(camera.getPos()) > camera.getzFar())
                 num++;
         }
-        if (num == points.length)
+        if (num == 3)//If out of render distance. Return.
             return;
 
         //Lighting
         if (!alwaysLit){
             for (int i = 0; i < pic.getWorld().getLightSources().size(); i++) {
-                Quisition normal = Math3D.normalize(Math3D.getCrossProduct(points[0], points[1], points[2]));
-                for (int j = 0; j < points.length; j++)
-                    points[j].lv += (pic.getWorld().getLightSources().get(i)).getLightLevel(points[j], normal) / pic.getWorld().getLightSources().size();
+                Quisition normal = Math3D.getNormal(newPoints.get(0), newPoints.get(1), newPoints.get(2));
+                for (Quisition p : newPoints)
+                    p.data[3] += (pic.getWorld().getLightSources().get(i)).getLightLevel(p, normal) / pic.getWorld().getLightSources().size();//Yeah... this makes no sense. Light-wise that is.
             }
         }else
-            for (int i = 0; i < points.length; i++)
-                points[i].lv = 1;
+            for (Quisition p : newPoints)//If always lit, set light level to 1
+                p.data[3] = 1;
 
         //Translate Points
-        Quisition[] newPoints = new Quisition[points.length];
-        for (int i = 0; i < points.length; i++) {
-            newPoints[i] = camera.translate(points[i]);
-            if (texturePoints != null)
-                newPoints[i].setUV(texturePoints[i][0], texturePoints[i][1]);
-            newPoints[i].lv = points[i].lv;
-        }
+        for (Quisition p : newPoints)
+            camera.translate(p);
 
         //Check if face is visible to camera
         if(!camera.pointsAreVisible(newPoints))
             return;
 
         //Clip objects on frustum near plane
-        ArrayList<Quisition[]> triangles = camera.clipZPlanes(newPoints);
-        if (triangles == null)
+        camera.clipZPlanes(newPoints);
+        if (newPoints.isEmpty())
             return;
 
         //Change to perspective
-        for (Quisition[] pos : triangles)
-            for (int j = 0; j < pos.length; j++)
-                pos[j] = camera.perspective(pos[j]);
+        for (Quisition newPoint : newPoints)
+            camera.perspective(newPoint);
 
         //Clip on screen edges
-        triangles = camera.clipScreenEdges(triangles);
-        if (triangles == null)
+        camera.clipScreenEdges(newPoints);
+        if (newPoints.isEmpty())
             return;
 
-
         //Draw
-        for (Quisition[] triangle : triangles) {
+        for (int i = 0; i < newPoints.size()/3; i++) {
             if (texture != null)
-                Quaphics.drawImageTri(triangle, camera, texture);
+                Quaphics.drawImageTri(newPoints.get(i*3),newPoints.get(i*3+1),newPoints.get(i*3+2), camera, texture);
             if (fill && texture == null)
-                Quaphics.fillTri(triangle, camera, fillColor);
+                Quaphics.fillTri(newPoints.get(i*3),newPoints.get(i*3+1),newPoints.get(i*3+2), camera, fillColor);
             if (outline && texture == null)
-                Quaphics.drawPolygon(triangle, camera, outlineColor,1);
+                Quaphics.drawPolygon(new Quisition[]{newPoints.get(i*3),newPoints.get(i*3+1),newPoints.get(i*3+2)}, camera, outlineColor,1);
         }
     }
 }

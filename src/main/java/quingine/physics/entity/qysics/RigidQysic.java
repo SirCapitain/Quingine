@@ -3,6 +3,7 @@ package quingine.physics.entity.qysics;
 import quingine.physics.entity.QollidableQuobject;
 import quingine.render.sim.env.Quworld;
 import quingine.render.sim.env.obj.Quobject;
+import quingine.render.sim.pos.Quaternion;
 import quingine.render.sim.pos.Quisition;
 import quingine.render.sim.Math3D;
 
@@ -12,7 +13,7 @@ import quingine.render.sim.Math3D;
 public class RigidQysic extends QollidableQuobject {
 
     private double linearDamping = .99;
-    private Quisition angularVelocity;
+    private Quaternion angularVelocity;
     private Quisition inverseInertia;
 
     /**
@@ -27,10 +28,10 @@ public class RigidQysic extends QollidableQuobject {
 
     public void hit(Quisition origin, Quisition direction, double force){
         Quisition objPoint = getQuobject().getVectorIntersectionPoint(origin, direction);
-        direction = new Quisition(getQuobject().getNormal((int)objPoint.v));
+        direction = new Quisition(getQuobject().getNormal((int)objPoint.data[1]));
         objPoint.subtract(getPos());
         direction.multiply(force);
-        angularVelocity = new Quisition(Math3D.getCrossProduct(direction, objPoint));
+        angularVelocity = new Quaternion(Math3D.getCrossProduct(direction, objPoint));
         angularVelocity.multiply(inverseInertia);
         double theta = Math3D.getMagnitude(angularVelocity)/2;
         angularVelocity.w = Math.cos(theta);

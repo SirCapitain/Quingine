@@ -118,6 +118,8 @@ public class MainMenu {
         lQ.addActionListener(e -> {
             String load = JOptionPane.showInputDialog(menu,
                     "Name of Quworld to load (Must be in quworlds folder)", null);
+            if (load == null)
+                return;
             load = load.concat(".quworld");
             world.load(load);
             refreshObjectList();

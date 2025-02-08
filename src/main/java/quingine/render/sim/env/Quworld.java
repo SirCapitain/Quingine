@@ -7,6 +7,7 @@ import quingine.physics.entity.Player;
 import quingine.render.sim.env.light.LightSource;
 import quingine.render.sim.env.obj.Quobject;
 import quingine.render.sim.listener.QuworldTickListener;
+import quingine.render.sim.pos.Quaternion;
 import quingine.render.sim.pos.Quisition;
 import quingine.render.util.dev.DevWindow;
 import quingine.render.util.win.Quicture;
@@ -183,7 +184,7 @@ public class Quworld{
             FileWriter writer = new FileWriter(file);
             for (Quobject object : quobjects) {
                 Quisition pos = object.getPos();
-                Quisition rot = object.getRotation();
+                Quaternion rot = object.getRotation();
                 String name = object.getName();
                 if (name == null)
                     name = "null";
@@ -248,7 +249,7 @@ public class Quworld{
                     Quobject obj = new Quobject(file, Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()));
                     obj.setName(reader.next());
                     obj.setTexture(reader.next());
-                    obj.rotate(new Quisition(Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next())));
+                    obj.rotate(new Quaternion(Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next()), Double.parseDouble(reader.next())));
                     obj.isVisible(Boolean.parseBoolean(reader.next()));
                     obj.alwaysLit(Boolean.parseBoolean(reader.next()));
                     add(obj);
@@ -395,7 +396,7 @@ public class Quworld{
     /**
      * Get a where the quamera is looking at based off of
      * all the entities in the world.
-     * @return a new quisition on the face of the quobject it is looking at (point.u = index of entity in quworld, point.v = index of plane on quobject)
+     * @return a new quisition on the face of the quobject it is looking at (point.data[0] = index of entity in quworld, point.data[1] = index of plane on quobject)
      */
     public Quisition getQuameraLookingAt(){
         Quisition point = new Quisition(0,0, Integer.MAX_VALUE);
@@ -405,7 +406,7 @@ public class Quworld{
             Quisition testPoint = qollidableQuobjects.get(i).getQuobject().getVectorIntersectionPoint(player.getQuamera().getPos(), player.getQuamera().getVector());
             if (testPoint != null && testPoint.getDistance(player.getQuamera().getPos()) <= point.getDistance(player.getQuamera().getPos())) {
                 point = new Quisition(testPoint);
-                point.u = i;
+                point.data[0] = i;
             }
         }
         if (point.equals(new Quisition(0,0, Integer.MAX_VALUE)))
@@ -427,9 +428,8 @@ public class Quworld{
                 executor.execute(() -> {
                     int startO = threadN * quobjects.size() / numThreads;
                     int endO = (threadN + 1) * quobjects.size() / numThreads;
-                    for (int i = startO; i < endO; i++) { //Draw only the quobjects of its cut.
+                    for (int i = startO; i < endO; i++) //Draw only the quobjects of its cut.
                         quobjects.get(i).paint(pic, cam);
-                    }
                     int startQ = threadN * qollidableQuobjects.size() / numThreads;
                     int endQ = (threadN + 1) * qollidableQuobjects.size() / numThreads;
                     for (int i = startQ; i < endQ; i++) {

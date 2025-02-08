@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Simulation of a camera in 3-D space.
@@ -42,6 +43,19 @@ public class Quamera {
     private int unitsWide = 2;
     private int unitsTall = 2;
     private int backgroundColor = Color.BLACK.getRGB();
+
+    private final Quisition LEFT_POS = new Quisition(-unitsWide / 2.0, 0, 0);
+    private final Quisition LEFT_NORMAL = new Quisition(1, 0, 0);
+    private final Quisition RIGHT_POS = new Quisition(unitsWide / 2.0, 0, 0);
+    private final Quisition RIGHT_NORMAL = new Quisition(-1, 0, 0);
+    private final Quisition UP_POS = new Quisition(0, unitsTall / 2.0, 0);
+    private final Quisition UP_NORMAL = new Quisition(0, -1, 0);
+    private final Quisition DOWN_POS = new Quisition(0, -unitsTall / 2.0, 0);
+    private final Quisition DOWN_NORMAL = new Quisition(0, 1, 0);
+    private final Quisition Z_FAR_POS = new Quisition(0,0, zFar);
+    private final Quisition Z_FAR_NORMAL = new Quisition(0,0, -1);
+    private final Quisition Z_NEAR_POS = new Quisition(0,0, zNear);
+    private final Quisition Z_NEAR_NORMAL = new Quisition(0,0, 1);
 
     private int forward = KeyEvent.VK_W;
     private int backward = KeyEvent.VK_S;
@@ -140,10 +154,7 @@ public class Quamera {
      * @return position in 3D world of the camera.
      */
     public Quisition getPos(){
-        if (position != null)
-            return position;
-        else
-            return new Quisition(0,0,0);
+        return Objects.requireNonNullElseGet(position, () -> new Quisition(0, 0, 0));
     }
 
     /**
@@ -365,16 +376,18 @@ public class Quamera {
      * Set how far the camera can see.
      * @param zFar units of how far.
      */
-    public void setzFar(double zFar){
+    public void setZFar(double zFar){
         this.zFar = zFar;
+        Z_FAR_POS.setPos(0,0,zFar);
     }
 
     /**
      * Set how close the camera can see.
      * @param zNear units of how near.
      */
-    public void setzNear(double zNear){
+    public void setZNear(double zNear){
         this.zNear = zNear;
+        Z_NEAR_POS.setPos(0,0,zNear);
     }
 
     /**
@@ -460,13 +473,10 @@ public class Quamera {
     /**
      * Translate a quisition to the proper place
      * @param pos quisition
-     * @return translated quisition
      */
-    public Quisition translate(Quisition pos){
-        Quisition newPos = new Quisition(pos);
-        Math3D.rotate(newPos, position, yaw, pitch, roll);
-        newPos.subtract(this.position);
-        return newPos;
+    public void translate(Quisition pos){
+        Math3D.rotate(pos, position, yaw, pitch, roll);
+        pos.subtract(this.position);
     }
 
     /**
@@ -477,8 +487,8 @@ public class Quamera {
      * @param points array of points
      * @return true for visible, false for not.
      */
-    public boolean pointsAreVisible(Quisition[] points){
-        return !(Math3D.getDotProduct(Math3D.normalize(Math3D.getCrossProduct(points[0], points[1], points[2])), points[0]) >= 0);
+    public boolean pointsAreVisible(ArrayList<Quisition> points){
+        return (Math3D.getDotProduct(Math3D.getNormal(points.get(0), points.get(1), points.get(2)), points.get(0)) >= 0);
     }
 
     /**
@@ -492,77 +502,45 @@ public class Quamera {
     /**
      * Clip a set of non-perspective points against the
      * zFar and zNear planes of the perspective frustum.
-     * @param points list of points non-perspective points
-     * @return Arraylist of an array of points that have been clipped
+     * @param points list of non-perspective points
      */
-    public ArrayList<Quisition[]> clipZPlanes(Quisition[] points){
-        Quisition[][] clip;
-        ArrayList<Quisition[]> clipped = new ArrayList<>();
+    public void clipZPlanes(ArrayList<Quisition> points){
         //zNear
-        clip = Math3D.clipObject(points, new Quisition(0,0, zNear), new Quisition(0,0,1));
-        if (clip == null)
-            return null;
-        ArrayList<Quisition[]> triangles = new ArrayList<>(Arrays.asList(clip));
+        Math3D.clipObject(points, Z_NEAR_POS, Z_NEAR_NORMAL);
+        if (points.isEmpty())
+            return;
         //zFar
-        for (Quisition[] triangle : triangles) {
-            clip = Math3D.clipObject(triangle, new Quisition(0, 0, zFar), new Quisition(0, 0, -1));
-            if (clip == null)
-                continue;
-            clipped.addAll(Arrays.asList(clip));
-        }
-        triangles = new ArrayList<>(clipped);
-        if (triangles.isEmpty())
-            return null;
-        return triangles;
+        Math3D.clipObject(points, Z_FAR_POS, Z_FAR_NORMAL);
     }
+
 
     /**
      * Clip a set of perspective points against the screen matrix.
-     * @param triangles an arraylist of an array of points
-     * @return an arraylist of an array of newly clipped points
+     * @param points points of a triangle(s) on an arraylist.
      */
-    public ArrayList<Quisition[]> clipScreenEdges(ArrayList<Quisition[]> triangles){
-        ArrayList<Quisition[]> clipped;
-        Quisition[][] clip;
-        for (int i = 0; i < 4; i++){
-            clipped = new ArrayList<>();
-            for (Quisition[] triangle : triangles) {
-                if (i == 0)
-                    clip = Math3D.clipObject(triangle, new Quisition(unitsWide / 2.0, 0, 0), new Quisition(-1, 0, 0));
-                else if (i == 1)
-                    clip = Math3D.clipObject(triangle, new Quisition(-unitsWide / 2.0, 0, 0), new Quisition(1, 0, 0));
-                else if (i == 2)
-                    clip = Math3D.clipObject(triangle, new Quisition(0, unitsTall / 2.0, 0), new Quisition(0, -1, 0));
-                else
-                    clip = Math3D.clipObject(triangle, new Quisition(0, -unitsTall / 2.0, 0), new Quisition(0, 1, 0));
-                if (clip == null)
-                    continue;
-                clipped.addAll(Arrays.asList(clip));
-            }
-            triangles = new ArrayList<>(clipped);
-            if (triangles.isEmpty())
-                return null;
-        }
-        return triangles;
+    public void clipScreenEdges(ArrayList<Quisition> points){
+        Math3D.clipObject(points, RIGHT_POS, RIGHT_NORMAL);//Right side of screen
+        Math3D.clipObject(points,LEFT_POS, LEFT_NORMAL);//Left side of screen
+        Math3D.clipObject(points, UP_POS, UP_NORMAL);//Top of screen
+        Math3D.clipObject(points, DOWN_POS, DOWN_NORMAL);//Bottom of screen
     }
 
 
     /**
      * Creates a perspective frustum that transforms points to be more real.
      * @param pos position in 3D space.
-     * @return the new position of the point
      */
-    public Quisition perspective(Quisition pos){
-        Quisition newPos = new Quisition(pos);
-        newPos.w = 1/pos.z;
-        newPos.u *= newPos.w;
-        newPos.v *= newPos.w;
-        newPos.setPos(
-                (height/(double)width)*(newPos.x/Math.tan(fov*.5))*newPos.w,
-                (newPos.y/(Math.tan(fov*.5)))*newPos.w,
-                (newPos.z*(zFar/(zFar-zNear)) - (zFar*zNear)/(zFar-zNear))*newPos.w);
-        newPos.lv = pos.lv;
-        return newPos;
+    public void perspective(Quisition pos){
+        double w = 1/pos.z;
+        if (pos.data != null) {
+            pos.data[0] = w;
+            pos.data[1] *= w;
+            pos.data[2] *= w;
+        }
+        pos.setPos(
+                (height/(double)width)*(pos.x/Math.tan(fov*.5))*w,
+                (pos.y/(Math.tan(fov*.5)))*w,
+                (pos.z*(zFar/(zFar-zNear)) - (zFar*zNear)/(zFar-zNear))*w);
     }
 
     /**
@@ -592,6 +570,10 @@ public class Quamera {
     public void setMatrix(int wide, int tall){
         unitsWide = wide;
         unitsTall = tall;
+        LEFT_POS.setPos(-unitsWide / 2.0, 0, 0);
+        RIGHT_POS.setPos(unitsWide / 2.0, 0, 0);
+        UP_POS.setPos(0, unitsTall / 2.0, 0);
+        DOWN_POS.setPos(0, -unitsTall / 2.0, 0);
     }
 
     /**

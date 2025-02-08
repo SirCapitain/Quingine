@@ -173,14 +173,13 @@ public class Quaphics {
     /**
      * A method that only fills in a triangle.
      * This does not take into account if the pixels extend beyond the screen
-     * @param vertices points of the triangle
      * @param q the camera that the triangle will be drawn on
      */
-    public static void fillTri(Quisition[] vertices, Quamera q, int color) {
+    public static void fillTri(Quisition v1, Quisition v2, Quisition v3, Quamera q, int color) {
             //Draw from top to bottom
-            Quisition[] nv = new Quisition[]{new Quisition(q.getScreenPosX(vertices[0].x), q.getScreenPosY(vertices[0].y), vertices[0].lv),new Quisition(q.getScreenPosX(vertices[1].x), q.getScreenPosY(vertices[1].y), vertices[1].lv),new Quisition(q.getScreenPosX(vertices[2].x), q.getScreenPosY(vertices[2].y), vertices[2].lv)};
-            double[] lightMap = Math3D.getPlane(nv);
-            Quisition[] points = new Quisition[]{vertices[0], vertices[1], vertices[2]};
+//            Quisition[] nv = new Quisition[]{new Quisition(q.getScreenPosX(v1.x), q.getScreenPosY(v1.y), v1.lv),new Quisition(q.getScreenPosX(v2.x), q.getScreenPosY(v2.y), v2.lv),new Quisition(q.getScreenPosX(vertices[2].x), q.getScreenPosY(vertices[2].y), vertices[2].lv)};
+//            double[] lightMap = Math3D.getPlane(nv);
+            Quisition[] points = new Quisition[]{v1, v2, v3};
             if (points[1].y > points[0].y)
                 points = new Quisition[]{points[1], points[0], points[2]};
             if (points[2].y > points[0].y)
@@ -228,9 +227,10 @@ public class Quaphics {
                     }
                     //draw
                     for (int x = startX; x < endX; x++) {
-                        double lv = -1/lightMap[2]*(lightMap[0]*x+lightMap[1]*y+lightMap[3]);
+//                        double lv = -1/lightMap[2]*(lightMap[0]*x+lightMap[1]*y+lightMap[3]);
+                        double lv = 1;
                         int colorN = updateColor(color, lv);
-                        q.setPixel(x, y, Math3D.calcZ(vertices, q.getMatrixPosX(x), q.getMatrixPosY(y)), colorN);
+                        q.setPixel(x, y, Math3D.calcZ(v1, v2, v3, q.getMatrixPosX(x), q.getMatrixPosY(y)), colorN);
                     }
                 }
             }
@@ -239,15 +239,17 @@ public class Quaphics {
     /**
      * A method draws an image in a triangle.
      * Does not factor in if the pixels are off screen
-     * @param vertices points on the triangle
+     * @param p1 point on the triangle
+     * @param p2 point on the triangle
+     * @param p3 point on the triangle
      * @param q the camera the draw image will be drawn on
      * @param image the image to be drawn
      */
-    public static void drawImageTri(Quisition[] vertices, Quamera q, BufferedImage image){
-        Quisition[] nv = new Quisition[]{new Quisition(q.getScreenPosX(vertices[0].x), q.getScreenPosY(vertices[0].y), vertices[0].lv),new Quisition(q.getScreenPosX(vertices[1].x), q.getScreenPosY(vertices[1].y), vertices[1].lv),new Quisition(q.getScreenPosX(vertices[2].x), q.getScreenPosY(vertices[2].y), vertices[2].lv)};
+    public static void drawImageTri(Quisition p1, Quisition p2, Quisition p3, Quamera q, BufferedImage image){
+        Quisition[] nv = new Quisition[]{new Quisition(q.getScreenPosX(p1.x), q.getScreenPosY(p1.y), p1.data[3]),new Quisition(q.getScreenPosX(p2.x), q.getScreenPosY(p2.y), p2.data[3]),new Quisition(q.getScreenPosX(p3.x), q.getScreenPosY(p3.y), p3.data[3])};
         double[] lightMap = Math3D.getPlane(nv);
         //Draw from top to bottom.
-        Quisition[] points = new Quisition[]{vertices[0], vertices[1], vertices[2]};
+        Quisition[] points = new Quisition[]{p1, p2, p3};
         if (points[1].y > points[0].y)
             points = new Quisition[]{points[1], points[0], points[2]};
         if (points[2].y > points[0].y)
@@ -263,17 +265,17 @@ public class Quaphics {
         int y2 = q.getScreenPosY(points[1].y);
         int y3 = q.getScreenPosY(points[2].y);
 
-        double u1 = points[0].u;
-        double u2 = points[1].u;
-        double u3 = points[2].u;
+        double w1 = points[0].data[0];
+        double w2 = points[1].data[0];
+        double w3 = points[2].data[0];
 
-        double v1 = points[0].v;
-        double v2 = points[1].v;
-        double v3 = points[2].v;
+        double u1 = points[0].data[1];
+        double u2 = points[1].data[1];
+        double u3 = points[2].data[1];
 
-        double w1 = points[0].w;
-        double w2 = points[1].w;
-        double w3 = points[2].w;
+        double v1 = points[0].data[2];
+        double v2 = points[1].data[2];
+        double v3 = points[2].data[2];
 
         double dy1 = Math.abs(y2 - y1);
         double dy2 = Math.abs(y3 - y1);

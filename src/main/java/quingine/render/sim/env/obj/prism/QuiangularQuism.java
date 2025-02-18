@@ -43,13 +43,13 @@ public class QuiangularQuism extends Quobject {
                 new Quisition(x - width * .5, y - height * .5, z - depth * .5),
                 new Quisition(x + width * .5, y - height * .5, z - depth * .5),
                 new Quisition(x + width * .5, y - height * .5, z + depth * .5)});
-        setFaces(new int[][]{
-                new int[]{4, 1, 2},//Bottom
-                new int[]{4, 2, 3},
-                new int[]{2, 0, 3},//Front
-                new int[]{1, 0, 2},//Left
-                new int[]{3, 0, 4},//Right
-                new int[]{4, 0, 1}});//Back
+        setFaces(new int[]{
+                4, 1, 2,//Bottom
+                4, 2, 3,
+                2, 0, 3,//Front
+                1, 0, 2,//Left
+                3, 0, 4,//Right
+                4, 0, 1});//Back
     }
 
     /**

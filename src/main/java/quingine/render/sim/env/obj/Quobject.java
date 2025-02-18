@@ -32,12 +32,13 @@ public class Quobject extends Quomponent {
 
     private Quaternion rotation = new Quaternion();
 
-    private Quisition[] points;
-    private Quisition[][] faces;
-    private Quisition[] tempPoints;
+    private volatile Quaternion deltaRotation = new Quaternion();
+    private volatile Quisition newPosition;
 
-    private double[][] texPoints;
-    private double[][][] texFaces;
+    private Quisition[] points;
+    private Quisition[] faces;
+
+    private double[] texPoints;
 
     private boolean fill = true;
     private boolean outline = false;
@@ -80,7 +81,7 @@ public class Quobject extends Quomponent {
     /**
      * Create a new quobject based off of another
      * *NOTE* This only works with .obj files!
-     * @param object
+     * @param object the quobject you wish to copyyyyy!
      */
     public Quobject(Quobject object){
         super(object.getPos());
@@ -94,6 +95,20 @@ public class Quobject extends Quomponent {
         setSize(object.getSize());
         alwaysLit(object.alwaysLit());
         isVisible(object.isVisible());
+    }
+
+    /**
+     * Initialize a quobject from a .obj file.
+     * @param objectFile fileName.obj
+     * @param x position of object in world
+     * @param y position of object in world
+     * @param z position of object in world
+     * @param size multiplies how much bigger the object will be.
+     */
+    public Quobject(String objectFile, double x, double y, double z, double size){
+        super(x, y, z);
+        this.size = size;
+        loadQuobjectFile(objectFile);
     }
 
     /**
@@ -121,25 +136,11 @@ public class Quobject extends Quomponent {
             return;
         double ratio = size / this.size;
         this.size = size;
-        for (Quisition point : tempPoints) {
+        for (Quisition point : points) {
             point.subtract(getPos());
             point.multiply(ratio);
             point.add(getPos());
         }
-    }
-
-    /**
-     * Initialize a quobject from a .obj file.
-     * @param objectFile fileName.obj
-     * @param x position of object in world
-     * @param y position of object in world
-     * @param z position of object in world
-     * @param size multiplies how much bigger the object will be.
-     */
-    public Quobject(String objectFile, double x, double y, double z, double size){
-        super(x, y, z);
-        this.size = size;
-        loadQuobjectFile(objectFile);
     }
 
     /**
@@ -190,12 +191,12 @@ public class Quobject extends Quomponent {
                     if (data.contains("map_Kd"))
                         setTexture(reader.next());
                 }
-            }catch (Exception e){System.out.println("Object has no material file!");}
+            }catch (Exception e){System.out.println("Object has no material file! " + objectFile);}
 
         }catch (Exception e){
             e.printStackTrace();
             setPoints(new Quisition[0]);
-            setFaces(new int[0][0]);
+            setFaces(new int[0]);
         }
     }
 
@@ -218,7 +219,7 @@ public class Quobject extends Quomponent {
             g.dispose();
         }catch (IOException io){
             io.printStackTrace();
-            System.out.println("This texture does not exist!");
+            System.out.println("This texture does not exist! " + file);
         }
     }
 
@@ -245,9 +246,6 @@ public class Quobject extends Quomponent {
      */
     public void setPoints(Quisition[] points) {
         this.points = points;
-        tempPoints = new Quisition[points.length];
-        for (int i = 0; i < points.length; i++)
-            tempPoints[i] = new Quisition(points[i]);
     }
 
     /**
@@ -257,10 +255,7 @@ public class Quobject extends Quomponent {
      */
     public void setPoints(ArrayList<Quisition> points) {
         this.points = new Quisition[points.size()];
-        tempPoints = new Quisition[points.size()];
         points.toArray(this.points);
-        for (int i = 0; i < points.size(); i++)
-            tempPoints[i] = new Quisition(points.get(i));
     }
 
     /**
@@ -275,11 +270,10 @@ public class Quobject extends Quomponent {
      * Sets all the planes of the quobject based off of the points already set.
      * @param faces 2D-Array of integers that correspond to the points of the quobject
      */
-    public void setFaces(int[][] faces){
-        this.faces = new Quisition[faces.length][3];
-        for (int i = 0; i < this.faces.length; i++)
-            for (int j = 0; j < faces[i].length; j++)
-                this.faces[i][j] = points[faces[i][j]];
+    public void setFaces(int[] faces){
+        this.faces = new Quisition[faces.length];
+        for (int i = 0; i < faces.length; i++)
+            this.faces[i] = points[faces[i]];
     }
 
     /**
@@ -288,30 +282,25 @@ public class Quobject extends Quomponent {
      *              Each face is 3 points. e.g. {0,4,1,5,2,1} A plane with points 0, 4, 1 is made and another with points 5, 2, 1
      */
     public void setFaces(ArrayList<Integer> faces){
-        this.faces = new Quisition[faces.size()/3][3];
+        this.faces = new Quisition[faces.size()];
         for (int i = 0; i < this.faces.length; i++)
-            for (int j = 0; j < this.faces[i].length; j++)
-                this.faces[i][j] = points[faces.get(j+i*this.faces[i].length)];
+            this.faces[i] = points[faces.get(i)];
     }
 
     /**
      * Get all the faces the quobject currently has.
-     * @return a 2D array of Quisitions that are organized by face.
+     * @return an array of Quisitions that are organized by face.
      */
-    public Quisition[][] getFaces(){
+    public Quisition[] getFaces(){
         return faces;
     }
 
     /**
      * Set the list of UV coordinates for the quobject.
-     * @param points 2D array e.g. {{u,v},{u2,v2}}
+     * @param points an array e.g. {u1,v1, u2,v2}
      */
-    public void setTexturePoints(double[][] points){
-        texPoints = new double[points.length][2];
-        for (int i = 0; i < texPoints.length/2; i++) {
-            texPoints[i][0] = points[i][0];
-            texPoints[i][1] = points[i][1];
-        }
+    public void setTexturePoints(double[] points){
+        texPoints = points.clone();
     }
 
     /**
@@ -320,23 +309,19 @@ public class Quobject extends Quomponent {
      *               e.g. {u, v, u2, v2}
      */
     public void setTexturePoints(ArrayList<Double> points){
-        texPoints = new double[points.size()][2];
-        for (int i = 0; i < texPoints.length/2; i++) {
-            texPoints[i][0] = points.get(i*2);
-            texPoints[i][1] = points.get(i*2+1);
-        }
+        texPoints = points.stream().mapToDouble(i -> i).toArray();
     }
 
     /**
      * Set the what faces use what texture points.
-     * @param faces 2D array of integers that correspond to
+     * @param faces an array of integers that correspond to
      *              the UV coordinates already set in the quobject.
      */
-    public void setTextureFaces(int[][] faces){
-        texFaces = new double[faces.length][3][2];
-        for (int i = 0; i < texFaces.length; i++)
-            for (int j = 0; j < texFaces[i].length; j++)
-                texFaces[i][j] = texPoints[faces[i][j]];
+    public void setTextureFaces(int[] faces){
+        double[] texClone = texPoints.clone();
+        texPoints = new double[faces.length];
+        for (int i = 0; i < texPoints.length; i++)
+            texPoints[i] = texClone[faces[i]];
     }
 
     /**
@@ -346,26 +331,31 @@ public class Quobject extends Quomponent {
      *              Each face used 3 points at a time.
      */
     public void setTextureFaces(ArrayList<Integer> faces){
-        texFaces = new double[faces.size()/3][3][2];
-        for (int i = 0; i < texFaces.length; i++)
-            for (int j = 0; j < texFaces[i].length; j++)
-                texFaces[i][j] = texPoints[faces.get(j + i * this.texFaces[i].length)];
+        double[] texClone = texPoints.clone();
+        texPoints = new double[faces.size()*2];
+        for (int i = 0; i < faces.size(); i++) {
+            texPoints[i*2] = texClone[faces.get(i)*2];
+            texPoints[i*2+1] = texClone[faces.get(i)*2+1];
+        }
     }
 
     /**
      * Get the list of UV coordinates for a face of your choice!
      * @param face the number of the face.
-     * @return a 2d array containing UV coordinates
+     * @return an array containing UV coordinates {u1, v1, u2, v2, u3, v3}
      */
-    public double[][] getTexturePoints(int face){
-        return texFaces[face].clone();
+    public double[] getTexturePoints(int face){
+        double[] points = new double[6];
+        for (int i = 0; i < points.length/2; i++)
+            points[i] = texPoints[face * 2 + i];
+        return null;
     }
 
     /**
      * Get all the texture points of the quobject
-     * @return double[][] {{u1, v1}, {u2, v2}...}
+     * @return double[] {{u1, v1, u2, v2...}
      */
-    public double[][] getTexturePoints() {
+    public double[] getTexturePoints() {
         return texPoints;
     }
 
@@ -375,7 +365,20 @@ public class Quobject extends Quomponent {
      * @return a Quisition that is the normal vector
      */
     public Quisition getNormal(int face){
-        return Math3D.getNormal(faces[face]);
+        int index = face*3;
+        return Math3D.getNormal(faces[index], faces[index+1], faces[index+2]);
+    }
+
+    /**
+     * Get the face of your dreams!
+     * @param face integer corresponding to the face your want!
+     * @return an array of quisitions that correspond to your face!
+     */
+    public Quisition[] getFace(int face){
+        Quisition[] f = new Quisition[3];
+        for (int i = 0; i < 3; i++)
+            f[i] = new Quisition(faces[face*3 + i]);
+        return f;
     }
 
     /**
@@ -387,7 +390,7 @@ public class Quobject extends Quomponent {
      * @param theta in radians the amount you want to rotate the object by.
      */
     public synchronized void rotate(double vx, double vy, double vz, double theta){
-        rotate(getPos(), vx, vy, vz, theta);
+        rotate(newPosition, vx, vy, vz, theta);
     }
 
     /**
@@ -401,26 +404,25 @@ public class Quobject extends Quomponent {
      */
     public synchronized void rotate(Quisition pos, double vx, double vy, double vz, double theta) {
         double sin = Math.sin(theta*.5);
-        rotate(new Quaternion(vx*sin,vy*sin,vz*sin,Math.cos(theta*.5)), pos);
+        rotate(new Quaternion(vx*sin,vy*sin,vz*sin, Math.cos(theta*.5)), pos);
     }
 
     /**
      * Rotate a quobject based off a quaternion.
-     * @param quaternion a Quisition to represent the quaternion
+     * @param quaternion rotational quaternion
      * @param pos a Quisition that represents what the quobject will rotate around
      */
     public synchronized void rotate(Quaternion quaternion, Quisition pos){
-        rotation.setPos(Math3D.combineQuaternions(quaternion, rotation));
-        for (Quisition point : tempPoints)
-            Math3D.rotate(point, pos, quaternion);
+        deltaRotation = Math3D.combineQuaternions(quaternion, deltaRotation);
+        Math3D.rotate(newPosition, pos, quaternion);
     }
 
     /**
      * Rotate a quobject based off a quaternion.
-     * @param quaternion a Quisition to represent the quaternion
+     * @param quaternion the rotational quaternion
      */
     public synchronized void rotate(Quaternion quaternion){
-        rotate(quaternion, getPos());
+        rotate(quaternion, newPosition);
     }
 
     /**
@@ -436,16 +438,13 @@ public class Quobject extends Quomponent {
 
     /**
      * Set the rotation of a quobject based off a quaternion and a point of rotation
-     * @param quaternion a quisition to represent the quaternion
+     * @param quaternion the quaternion to set to
      * @param point a quisition to rotate around
      */
     public synchronized void setRotation(Quaternion quaternion, Quisition point){
-        Quaternion rot = new Quaternion(rotation);
-        rot.w *= -1;
-        rotation = new Quaternion(quaternion);
-        rot = Math3D.combineQuaternions(quaternion, rot);
-        for (Quisition p : tempPoints)
-            Math3D.rotate(p, point, rot);
+        Quaternion inverse = new Quaternion(rotation);
+        inverse.multiply(-1);
+        rotate(Math3D.combineQuaternions(inverse, quaternion), point);
     }
 
     /**
@@ -472,7 +471,7 @@ public class Quobject extends Quomponent {
      */
     public synchronized void setRotation(double vx, double vy, double vz, double theta) {
         double sin = Math.sin(theta*.5);
-        setRotation(new Quaternion(vx*sin,vy*sin,vz*sin,Math.cos(theta*.5)), getPos());
+        setRotation(new Quaternion(vx*sin,vy*sin,vz*sin,Math.cos(theta*.5)),newPosition);
     }
 
     /**
@@ -496,15 +495,15 @@ public class Quobject extends Quomponent {
      * @param roll radians of rotation on the z-axis
      */
     public synchronized void setRotation(double yaw, double pitch, double roll) {
-        setRotation(yaw, pitch, roll, getPos());
+        setRotation(yaw, pitch, roll, newPosition);
     }
 
     /**
      * Set the rotation of the quobject based off a quaternion
-     * @param quaternion a Quisition to represent the quaternion
+     * @param quaternion A QUATERNION!!! ITS REAL!
      */
     public synchronized void setRotation(Quaternion quaternion){
-       setRotation(quaternion, getPos());
+       setRotation(quaternion,newPosition);
     }
 
     /**
@@ -527,15 +526,15 @@ public class Quobject extends Quomponent {
         Quisition posV = new Quisition(vector);
         posV.add(origin);
         Quisition[] points;
-        for (int i = 0; i < faces.length; i++) {
-            points = faces[i];
+        for (int i = 0; i < faces.length/3; i++) {
+            points = getFace(i);
             Quisition testPoint = Math3D.getPlaneIntersectionPoint(points, origin, posV);
             if (testPoint == null || Math3D.getDist(origin, testPoint) >= Math3D.getDist(origin, point))
                 continue;
             point = new Quisition(testPoint);
             point.data = new double[]{0,i};
         }
-        if (point.z == Integer.MAX_VALUE || Math3D.getRadiansBetween(Math3D.getNormal(getFaces()[(int)point.data[0]]), vector) >= Math.PI/4)
+        if (point.z == Integer.MAX_VALUE || Math3D.getRadiansBetween(Math3D.getNormal(getFace((int)point.data[0])), vector) >= Math.PI/4)
             return null;
         return point;
     }
@@ -557,15 +556,10 @@ public class Quobject extends Quomponent {
      */
     @Override
     public synchronized void setPos(double x, double y, double z){
-        if (points == null){
-            super.setPos(x, y, z);
-            return;
-        }
-        for (Quisition point : tempPoints){
-            point.subtract(getPos());
-            point.add(x, y, z);
-        }
-        super.setPos(x,y,z);
+        if (newPosition == null)
+            newPosition = new Quisition(x, y, z);
+        else
+            newPosition.setPos(x, y, z);
     }
 
     /**
@@ -603,13 +597,7 @@ public class Quobject extends Quomponent {
      */
     @Override
     public synchronized void changePosBy(double x, double y, double z){
-        if (points == null){
-            super.changePosBy(x, y, z);
-            return;
-        }
-        for (Quisition point : tempPoints)
-            point.add(x, y, z);
-        super.changePosBy(x,y,z);
+        newPosition.changeBy(x, y, z);
     }
 
     /**
@@ -698,9 +686,21 @@ public class Quobject extends Quomponent {
     /**
      * Update the position of the quobject and its points.
      */
-    private void updateComponents(){
-    for (int i = 0; i < points.length; i++)
-            points[i].setPos(tempPoints[i]);
+    private synchronized void updatePoints(){
+        Quaternion deltaRotation = new Quaternion(this.deltaRotation);
+        Quisition newPosition = new Quisition(this.newPosition);
+        Quisition deltaPos = new Quisition(newPosition);
+        this.deltaRotation.reset();
+        Math3D.rotateOrigin(getPos(), deltaRotation);
+        deltaPos.subtract(getPos());
+        for (int i = 0; i < points.length; i++) {
+            Math3D.rotateOrigin(points[i], deltaRotation);
+            points[i].add(deltaPos);
+        }
+        getPos().setPos(newPosition);
+        this.newPosition.setPos(newPosition);
+        rotation = Math3D.combineQuaternions(rotation, deltaRotation);
+        rotation.normalize();
     }
 
     /**
@@ -737,34 +737,26 @@ public class Quobject extends Quomponent {
     public void paint(Quicture pic, Quamera camera) {
         if (!isVisible)
             return;
-        for (int i = 0; i < faces.length; i++) {
-            double[][] texturePoints;
-            if (texPoints != null && texFaces != null)
-                texturePoints = texFaces[i];
-            else
-                texturePoints = null;
-            paintPlane(pic, camera, faces[i], texturePoints);
-        }
-        updateComponents();
+        for (int i = 0; i < faces.length/3; i++)
+            paintPlane(pic, camera, i);
+        updatePoints();
     }
 
     /**
      * Paint a 2D plane based off of points
      * @param pic this current quicture that is wanting to draw this quomponent.
      * @param camera the current quamera looking at this.
-     * @param points the points of the plane
-     * @param texturePoints the UV points of the texture.
      */
-    public void paintPlane(Quicture pic, Quamera camera, Quisition[] points, double[][] texturePoints){
+    public void paintPlane(Quicture pic, Quamera camera, int faceIndex){
         //Copy the points
         ArrayList<Quisition> newPoints = new ArrayList<>();
 
         int num = 0;
-        for (int i = 0; i < points.length; i++) {
-            Quisition p = new Quisition(points[i]);
+        for (int i = 0; i < 3; i++) {
+            Quisition p = new Quisition(faces[faceIndex*3+i]);
             newPoints.add(p);
-            if (texturePoints != null)
-                p.data = new double[]{1,texturePoints[i][0], texturePoints[i][1], 0};
+            if (texPoints != null)
+                p.data = new double[]{1,texPoints[faceIndex*6+i*2],texPoints[faceIndex*6+i*2+1], 0};
             else
                 p.data = new double[]{1, 0, 0, 0};
             if (p.getDistance(camera.getPos()) > camera.getzFar())

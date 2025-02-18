@@ -36,12 +36,14 @@ public class Math3D {
      * Rotate a point around another with the use of a Quaternion! Wow!
      * @param point the point the is being rotated
      * @param origin the point the other point is being rotated around
-     * @param quaternion a Quisition
+     * @param quaternion t
      */
     public static void rotate(Quisition point, Quisition origin, Quaternion quaternion){
         double x = point.x - origin.x;
         double y = point.y - origin.y;
         double z = point.z - origin.z;
+        if (x == 0 && y == 0 && z == 0)
+            return;
         double a = quaternion.w;
         double vx = quaternion.x;
         double vy = quaternion.y;
@@ -56,6 +58,30 @@ public class Math3D {
         double[] qp = matrixMult(q, p)[0];
         point.setPos(qp[0]*-vx + qp[1]*-a + qp[2]*vz + qp[3]*-vy, qp[0]*-vy + qp[1]*-vz + qp[2]*-a + qp[3]*vx, qp[0]*-vz + qp[1]*vy + qp[2]*-vx + qp[3]*-a);
         point.add(origin);
+    }
+
+    /**
+     * Rotate a point around the origin with the use of a Quaternion!
+     * @param point the point the is being rotated
+     * @param quaternion the quaternion used to make the rotation
+     */
+    public static void rotateOrigin(Quisition point, Quaternion quaternion){
+        double x = point.x;
+        double y = point.y;
+        double z = point.z;
+        double a = quaternion.w;
+        double vx = quaternion.x;
+        double vy = quaternion.y;
+        double vz = quaternion.z;
+        double[][] q =
+                {{a, -vx, -vy, -vz}};
+        double[][] p =
+                {{1, -x, -y, -z},
+                        {x, 1, -z, y},
+                        {y, z, 1, -x},
+                        {z, -y, x, 1}};
+        double[] qp = matrixMult(q, p)[0];
+        point.setPos(qp[0]*-vx + qp[1]*-a + qp[2]*vz + qp[3]*-vy, qp[0]*-vy + qp[1]*-vz + qp[2]*-a + qp[3]*vx, qp[0]*-vz + qp[1]*vy + qp[2]*-vx + qp[3]*-a);
     }
 
     /**
@@ -420,6 +446,7 @@ public class Math3D {
         Quisition in1;
         Quisition in2;
         int size = points.size()/3;
+        int offset = 0;
         for (int j = 0; j < size; j++) {
             totalOutside = 0;
             out1 = null;
@@ -427,24 +454,26 @@ public class Math3D {
             in1 = null;
             in2 = null;
             for (int i = 0; i < 3; i++) {
-                if (getDotProduct(planeNormal, points.get(i)) - getDotProduct(planeNormal, planePos) <= 0) {
+                if (getDotProduct(planeNormal, points.get(i+offset)) - getDotProduct(planeNormal, planePos) <= 0) {
                     totalOutside++;
                     if (out1 == null)
-                        out1 = points.get(i);
+                        out1 = points.get(i+offset);
                     else
-                        out2 = points.get(i);
+                        out2 = points.get(i+offset);
                 } else {
                     if (in1 == null)
-                        in1 = points.get(i);
+                        in1 = points.get(i+offset);
                     else
-                        in2 = points.get(i);
+                        in2 = points.get(i+offset);
                 }
             }
-            if (totalOutside == 0)
-                return;
-            points.removeFirst();
-            points.removeFirst();
-            points.removeFirst();
+            if (totalOutside == 0) {
+                offset += 3;
+                continue;
+            }
+            points.remove(offset);
+            points.remove(offset);
+            points.remove(offset);
             if (totalOutside == 2) {
                 points.add(getIntersectionPoint(planePos, planeNormal, in1, out1));
                 points.add(getIntersectionPoint(planePos, planeNormal, in1, out2));

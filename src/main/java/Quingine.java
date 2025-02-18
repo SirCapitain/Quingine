@@ -19,17 +19,18 @@ public class Quingine {
         picture.setBackgroundColor(Color.BLACK);
         window.setFps(0);
         picture.setPercentResolution(.4);
-        window.setTitle("Quingine 25.2.08");
+        window.setTitle("Quingine 25.2.17");
 
-        int size = 10;
+//        world.load("test.quworld");
+
+        int size = 20;
         for (int i = 0; i < size; i++)
             for (int j = 0; j < size; j++){
-                Quobject obj = new Quobject("RubixCube", i*6-10, -10,j*6+10, 100);
+                Quobject obj = new Quobject("RubixCube", i*6-10, -15,j*6+10, 100);
                 world.add(obj);
             }
 
-        world.enableDevMode();
-
+//        world.enableDevMode();
 
         //Camera
         double speed = .25;

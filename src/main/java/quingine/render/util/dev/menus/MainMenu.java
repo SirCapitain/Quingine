@@ -148,9 +148,9 @@ public class MainMenu {
         objScroll = new JScrollPane(objList);
         devWin.setSizeOf(objScroll, 1,1.7);
         devWin.setPosOf(objScroll, 0,.1);
-        refreshObjectList();
         menu.add(objScroll);
         devWin.update();
+        refreshObjectList();
     }
 
     /**

@@ -14,7 +14,7 @@ public class Quaternion extends Quisition{
      * Create a new quaternion with (0,0,0,0)
      */
     public Quaternion(){
-        w = 0;
+        w = 1;
     }
 
     /**
@@ -39,6 +39,26 @@ public class Quaternion extends Quisition{
     }
 
     /**
+     * Normalizes the quaternion.
+     * Sometimes those pesky quaternions deviate a little.
+     */
+    public void normalize(){
+        double mag = Math.sqrt(w*w+x*x+y*y+z*z);
+        divide(mag);
+        w /= mag;
+    }
+
+    /**
+     * resets the quaternion to default of 0 degrees.
+     */
+    public void reset(){
+        w = 1;
+        x = 0;
+        y = 0;
+        z = 0;
+    }
+
+    /**
      * Create a quaternion based a quisition.
      * Only freaks would use this.
      * @param quisition ITS A QUISITION!
@@ -47,4 +67,8 @@ public class Quaternion extends Quisition{
         super(quisition);
     }
 
+    @Override
+    public String toString() {
+        return x + "i" + " + " + y + "j" + " + " + z + "k" + " + " + w ;
+    }
 }

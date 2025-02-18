@@ -47,19 +47,19 @@ public class QuectangularQuism extends Quobject {
                 new Quisition(x - width * .5, y - height * .5, z + depth * .5),
                 new Quisition(x - width * .5, y - height * .5, z - depth * .5),
                 new Quisition(x + width * .5, y - height * .5, z - depth * .5)});
-        setFaces(new int[][]{
-                new int[]{1, 0, 3},//Top
-                new int[]{1, 3, 2},
-                new int[]{4, 5, 6},//Bottom
-                new int[]{4, 6, 7},
-                new int[]{5, 0, 1},//Left
-                new int[]{5, 1, 6},
-                new int[]{7, 2, 3},//Right
-                new int[]{7, 3, 4},
-                new int[]{4, 3, 0},//Back
-                new int[]{4, 0, 5},
-                new int[]{6, 1, 2},//Front
-                new int[]{6, 2, 7}});
+        setFaces(new int[]{
+                1, 0, 3,//Top
+                1, 3, 2,
+                4, 5, 6,//Bottom
+                4, 6, 7,
+                5, 0, 1,//Left
+                5, 1, 6,
+                7, 2, 3,//Right
+                7, 3, 4,
+                4, 3, 0,//Back
+                4, 0, 5,
+                6, 1, 2,//Front
+                6, 2, 7});
     }
 
     /**

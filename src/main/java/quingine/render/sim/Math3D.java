@@ -69,6 +69,8 @@ public class Math3D {
         double x = point.x;
         double y = point.y;
         double z = point.z;
+        if (x == 0 && y == 0 && z == 0)
+            return;
         double a = quaternion.w;
         double vx = quaternion.x;
         double vy = quaternion.y;

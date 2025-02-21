@@ -392,6 +392,8 @@ public class ModifyMenu {
                 attributesVisible(true);
                 so.setVisible(true);
                 st.setVisible(true);
+                power.setVisible(false);
+                powerl.setVisible(false);
                 objSize.setValue(obj.getSize());
                 double[] rot = Math3D.quaternionToEuler(obj.getRotation());
                 yaw.setValue(Math.toDegrees(rot[0]));
@@ -402,6 +404,8 @@ public class ModifyMenu {
             } else if (quom instanceof LightSource ls) {
                 rotationVisible(false);
                 attributesVisible(false);
+                power.setVisible(true);
+                powerl.setVisible(true);
                 so.setVisible(false);
                 st.setVisible(false);
                 power.setValue(ls.getPower());

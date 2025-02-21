@@ -214,6 +214,15 @@ public class Quisition {
     }
 
     /**
+     * Check if the position of x, y, and z
+     * all equal zero
+     * @return true if all are zero, false if not.
+     */
+    public boolean isZero(){
+        return x == 0 && y == 0 && z == 0;
+    }
+
+    /**
      * Chance x by a specific value.
      * @param value value you want to change x by
      */

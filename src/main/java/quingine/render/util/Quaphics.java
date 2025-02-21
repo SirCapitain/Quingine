@@ -49,33 +49,56 @@ public class Quaphics {
     }
 
     /**
-     * Honestly. I gave up figuring this one out.
-     * This method draws any polygon you put it. As long as it has points.
-     * @param points list of Quetexes.
+     * A method the draw a triangle.
+     * NO POLYGONS WITH MORE THAN 3 SIDES!
+     * I SAID NO!
+     * @param p1 A Quisition to be a vertex
+     * @param p2 A Quisition to be a vertex
+     * @param p3 A Quisition to be a vertex
      * @param q the camera to draw on.
+     * @param color the color of the triangle
+     * @param zOffset the offset of the z to allow it to draw over some other things
      */
-    public static void drawPolygon(Quisition[] points, Quamera q, int color, double brightness){
-        color = updateColor(color, brightness);
-        for (int i = 0; i < points.length; i++) {
-            int j = i == points.length - 1 ? 0 : i + 1;
-            if (Double.isNaN(points[i].z) || Double.isNaN(points[j].z))
-                continue;
-            int x1 = q.getScreenPosX(points[i].x);
-            int x2 = q.getScreenPosX(points[j].x);
-            int y1 = q.getScreenPosY(points[i].y);
-            int y2 = q.getScreenPosY(points[j].y);
+    public static void drawPolygon(Quisition p1, Quisition p2, Quisition p3, Quamera q, int color, double zOffset){
+        Quisition[] points = new Quisition[]{p1, p2, p3};
+        if (points[1].y > points[0].y)
+            points = new Quisition[]{points[1], points[0], points[2]};
+        if (points[2].y > points[0].y)
+            points = new Quisition[]{points[2], points[0], points[1]};
+        if (points[2].y > points[1].y)
+            points = new Quisition[]{points[0], points[2], points[1]};
+        int x1 = q.getScreenPosX(points[0].x);
+        int x2 = q.getScreenPosX(points[1].x);
+        int x3 = q.getScreenPosX(points[2].x);
+        int x4 = x2;
+
+        int y1 = q.getScreenPosY(points[0].y);
+        int y2 = q.getScreenPosY(points[1].y);
+        int y3 = q.getScreenPosY(points[2].y);
+        int y4 = y2;
+
+        for (int i = 0; i < 3; i++) {
+            if (i == 1){
+                x2 = x3;
+                y2 = y3;
+            }
+            else if(i == 2){
+                x1 = x4;
+                y1 = y4;
+            }
             int yInc = Integer.compare(y2, y1);
             int xInc = Integer.compare(x2, x1);
             double dx = x2 - x1;
             double dy = y2 - y1;
             double[] zEquation = Math3D.getPlane(points);
+            double zRep = -1 / zEquation[2];
             if (dx == 0) {//Vertical
                 if (x1 < 0 || x1 > q.getWidth())
                     continue;
                 y1 = y1 < 0 ? 0 : Math.min(y1, q.getHeight());
                 y2 = y2 < 0 ? 0 : Math.min(y2, q.getHeight());
                 for (int y = y1; y != y2; y += yInc)
-                    q.setPixel(x1, y, -1/zEquation[2]*(zEquation[0]*q.getMatrixPosX(x1)+zEquation[1]*q.getMatrixPosY(y)+zEquation[3]), color);
+                    q.setPixel(x1, y,  zRep * (zEquation[0] * q.getMatrixPosX(x1) + zEquation[1] * q.getMatrixPosY(y) + zEquation[3]) + zOffset, color);
                 continue;
             }
             if (dy == 0) {//Horizontal
@@ -85,7 +108,7 @@ public class Quaphics {
                 x2 = x2 < 0 ? 0 : Math.min(x2, q.getWidth());
 
                 for (int x = x1; x != x2; x += xInc)
-                    q.setPixel(x, y1, -1/zEquation[2]*(zEquation[0]*q.getMatrixPosX(x)+zEquation[1]*q.getMatrixPosY(y1)+zEquation[3]), color);
+                    q.setPixel(x, y1, zRep * (zEquation[0] * q.getMatrixPosX(x) + zEquation[1] * q.getMatrixPosY(y1) + zEquation[3]) + zOffset, color);
                 continue;
             }
             double slope = dy / dx;
@@ -95,77 +118,17 @@ public class Quaphics {
                 x2 = x2 < 0 ? 0 : Math.min(x2, q.getWidth());
                 for (int x = x1; x != x2; x += xInc) {
                     double y = x * slope + b;
-                    q.setPixel(x, (int) Math.round(y), -1/zEquation[2]*(zEquation[0]*q.getMatrixPosX(x)+zEquation[1]*q.getMatrixPosY(y)+zEquation[3]), color);
+                    q.setPixel(x, (int) Math.round(y), zRep * (zEquation[0] * q.getMatrixPosX(x) + zEquation[1] * q.getMatrixPosY(y) + zEquation[3]) + zOffset, color);
                 }
                 continue;
             }
-            if (Math.abs(slope) >= 1){//More Vertical
+            if (Math.abs(slope) >= 1) {//More Vertical
                 y1 = y1 < 0 ? 0 : Math.min(y1, q.getHeight());
                 y2 = y2 < 0 ? 0 : Math.min(y2, q.getHeight());
-                for (int y = y1; y != y2; y+=yInc) {
-                    double x = (y-b)/slope;
-                    q.setPixel((int)Math.round(x), y, -1/zEquation[2]*(zEquation[0]*q.getMatrixPosX(x)+zEquation[1]*q.getMatrixPosY(y)+zEquation[3]), color);
+                for (int y = y1; y != y2; y += yInc) {
+                    double x = (y - b) / slope;
+                    q.setPixel((int) Math.round(x), y, zRep * (zEquation[0] * q.getMatrixPosX(x) + zEquation[1] * q.getMatrixPosY(y) + zEquation[3]) + zOffset, color);
                 }
-            }
-        }
-    }
-
-    /**
-     * I did figure this one out.
-     * This method fills any polygon you put in. This also
-     * accounts for each individual z for each quixel.
-     * @param points list of Quertexes to draw to.
-     * @param camera the camera to draw on.
-     */
-    public static void fillPolygon(Quisition[] points, Quamera camera, int color, double brightness) {
-        color = updateColor(color, brightness);
-        //Determining the Slope
-        double[][] equations = new double[points.length][2];
-        int yMax =Integer.MIN_VALUE;
-        int yMin = Integer.MAX_VALUE;
-        int xMax =Integer.MIN_VALUE;
-        int xMin = Integer.MAX_VALUE;
-        for (int i = 0; i < points.length; i++) {
-            int j = i == points.length-1 ? 0 : i + 1;
-            if (Double.isNaN(points[i].z) || Double.isNaN(points[j].z))
-                continue;
-            int x1 = camera.getScreenPosX(points[i].x);
-            int x2 = camera.getScreenPosX(points[j].x);
-            int y1 = camera.getScreenPosY(points[i].y);
-            int y2 = camera.getScreenPosY(points[j].y);
-            yMax = Math.max(y1, yMax);
-            yMin = Math.min(y1, yMin);
-            xMax = Math.max(x1, xMax);
-            xMin = Math.min(x1, xMin);
-            int dx = x2-x1;
-            int dy = y2-y1;
-            double slope = dy != 0 ? (double)dx/dy : Double.NaN;
-            equations[i][0] = slope;
-            equations[i][1] = x1 - (slope*y1);
-        }
-        yMax = yMax < 0 ? 0 : Math.min(yMax, camera.getHeight());
-        yMin = yMin < 0 ? 0 : Math.min(yMin, camera.getHeight());
-        xMax = xMax < 0 ? 0 : Math.min(xMax, camera.getWidth());
-        xMin = xMin < 0 ? 0 : Math.min(xMin, camera.getWidth());
-        //Drawing every line
-        for (int y = yMin; y <= yMax; y++) {
-            //Finding each edge that will enclose the shape
-            ArrayList<Integer> xPoints = new ArrayList<>();
-            for (int i = 0; i < equations.length; i++) {
-                int j = i == points.length - 1 ? 0 : i + 1;
-                int x = (int) Math.round(y * equations[i][0] + equations[i][1]);
-                if (!Double.isNaN(equations[i][0]) && !xPoints.contains(x) && ((y <= camera.getScreenPosY(points[i].y) && y >= camera.getScreenPosY((points[j].y))) || (y <= camera.getScreenPosY(points[j].y) && y >= camera.getScreenPosY(points[i].y))))
-                    xPoints.add(x);
-            }
-            //Order
-            Collections.sort(xPoints);
-            double[] zEquation = Math3D.getPlane(points);
-            //Draw each pixel in between the pixels.
-            if (xPoints.size() > 1) {
-                xPoints.set(0, xPoints.get(0) < xMin ? xMin : xPoints.get(0));
-                xPoints.set(1, xPoints.get(1) > xMax ? xMax : xPoints.get(1));
-                for (int x = xPoints.get(0); x <= xPoints.get(1); x++)
-                    camera.setPixel(x, y, -1/zEquation[2]*(zEquation[0]*camera.getMatrixPosX(x)+zEquation[1]*camera.getMatrixPosY(y)+zEquation[3]), color);
             }
         }
     }
@@ -173,13 +136,17 @@ public class Quaphics {
     /**
      * A method that only fills in a triangle.
      * This does not take into account if the pixels extend beyond the screen
+     * @param p1 A Quisition to be a vertex
+     * @param p2 A Quisition to be a vertex
+     * @param p3 A Quisition to be a vertex
      * @param q the camera that the triangle will be drawn on
+     * @param color the color of the filling. YUM!
      */
-    public static void fillTri(Quisition v1, Quisition v2, Quisition v3, Quamera q, int color) {
+    public static void fillTri(Quisition p1, Quisition p2, Quisition p3, Quamera q, int color) {
             //Draw from top to bottom
-//            Quisition[] nv = new Quisition[]{new Quisition(q.getScreenPosX(v1.x), q.getScreenPosY(v1.y), v1.lv),new Quisition(q.getScreenPosX(v2.x), q.getScreenPosY(v2.y), v2.lv),new Quisition(q.getScreenPosX(vertices[2].x), q.getScreenPosY(vertices[2].y), vertices[2].lv)};
-//            double[] lightMap = Math3D.getPlane(nv);
-            Quisition[] points = new Quisition[]{v1, v2, v3};
+            Quisition[] nv = new Quisition[]{new Quisition(q.getScreenPosX(p1.x), q.getScreenPosY(p1.y), p1.data[3]),new Quisition(q.getScreenPosX(p2.x), q.getScreenPosY(p2.y), p2.data[3]),new Quisition(q.getScreenPosX(p3.x), q.getScreenPosY(p3.y), p3.data[3])};
+            double[] lightMap = Math3D.getPlane(nv);
+            Quisition[] points = new Quisition[]{p1, p2, p3};
             if (points[1].y > points[0].y)
                 points = new Quisition[]{points[1], points[0], points[2]};
             if (points[2].y > points[0].y)
@@ -227,10 +194,9 @@ public class Quaphics {
                     }
                     //draw
                     for (int x = startX; x < endX; x++) {
-//                        double lv = -1/lightMap[2]*(lightMap[0]*x+lightMap[1]*y+lightMap[3]);
-                        double lv = 1;
+                        double lv = -1/lightMap[2]*(lightMap[0]*x+lightMap[1]*y+lightMap[3]);
                         int colorN = updateColor(color, lv);
-                        q.setPixel(x, y, Math3D.calcZ(v1, v2, v3, q.getMatrixPosX(x), q.getMatrixPosY(y)), colorN);
+                        q.setPixel(x, y, Math3D.calcZ(p1, p2, p3, q.getMatrixPosX(x), q.getMatrixPosY(y)), colorN);
                     }
                 }
             }

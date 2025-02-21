@@ -39,7 +39,6 @@ public class Quicture extends JPanel {
     private Color debugColor = Color.black;
     private Font debugFont = new Font(Font.DIALOG, Font.PLAIN, 10);
 
-
     private JToolBar toolBar;
     private boolean showCrosshair = true;
 
@@ -92,7 +91,7 @@ public class Quicture extends JPanel {
         picture = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         for (int w = 0; w < width; w++)
             for (int h = 0; h < height; h++)
-                ((DataBufferInt) picture.getRaster().getDataBuffer()).getData()[h*getResWidth() + w] = backgroundColor;
+                ((DataBufferInt) picture.getRaster().getDataBuffer()).getData()[h*getResWidth() + w] = Color.pink.getRGB();
     }
 
     /**

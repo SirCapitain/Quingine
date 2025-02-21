@@ -11,7 +11,7 @@ public class Quaternion extends Quisition{
     public double w;
 
     /**
-     * Create a new quaternion with (0,0,0,0)
+     * Create a new quaternion with (0,0,0,1)
      */
     public Quaternion(){
         w = 1;
@@ -56,6 +56,15 @@ public class Quaternion extends Quisition{
         x = 0;
         y = 0;
         z = 0;
+    }
+
+    /**
+     * Check to see if the quaternion is all zero
+     * @return true if w, x, y, and z equal zero, false if not.
+     */
+    @Override
+    public boolean isZero(){
+        return w == 0 && x == 0 && y == 0 && z == 0;
     }
 
     /**

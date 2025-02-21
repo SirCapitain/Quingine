@@ -48,10 +48,10 @@ public class MainMenu {
                         "Name of quobject folder. (Must be in objects folder)", null);
                 if (obj == null)
                     return;
-                world.add(new Quobject(obj, 0, 0, 0, 1));
+                world.add(new Quobject(obj, world.getPlayer().getPos(), 1));
             }
             if (input == 1) {
-                world.add(new LightSource());
+                world.add(new LightSource(world.getPlayer().getPos()));
             }
             refreshObjectList();
             devWin.update();

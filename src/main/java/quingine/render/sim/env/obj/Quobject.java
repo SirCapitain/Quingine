@@ -31,13 +31,11 @@ public class Quobject extends Quomponent {
     private String objectFile;
 
     private Quaternion rotation = new Quaternion();
-
     private volatile Quaternion deltaRotation = new Quaternion();
     private volatile Quisition newPosition;
 
     private Quisition[] points;
     private Quisition[] faces;
-
     private double[] texPoints;
 
     private boolean fill = true;
@@ -107,6 +105,17 @@ public class Quobject extends Quomponent {
      */
     public Quobject(String objectFile, double x, double y, double z, double size){
         super(x, y, z);
+        this.size = size;
+        loadQuobjectFile(objectFile);
+    }
+    /**
+     * Initialize a quobject from a .obj file.
+     * @param objectFile fileName.obj
+     * @param pos a Quisition
+     * @param size multiplies how much bigger the object will be.
+     */
+    public Quobject(String objectFile, Quisition pos, double size){
+        super(pos);
         this.size = size;
         loadQuobjectFile(objectFile);
     }
@@ -442,6 +451,8 @@ public class Quobject extends Quomponent {
      * @param point a quisition to rotate around
      */
     public synchronized void setRotation(Quaternion quaternion, Quisition point){
+        if (quaternion.isZero())
+            return;
         Quaternion inverse = new Quaternion(rotation);
         inverse.multiply(-1);
         rotate(Math3D.combineQuaternions(inverse, quaternion), point);
@@ -483,6 +494,8 @@ public class Quobject extends Quomponent {
      * @param point A quisition to rotate around
      */
     public synchronized void setRotation(double yaw, double pitch, double roll, Quisition point) {
+        if (yaw == 0 && pitch == 0 && roll == 0)
+            return;
         Quaternion quaternion = Math3D.eulerToQuaternion(yaw, pitch, roll);
         setRotation(quaternion, point);
     }
@@ -611,7 +624,7 @@ public class Quobject extends Quomponent {
 
     /**
      * Check if the object is in fill mode.
-     * @return true if fill false if empty
+     * @return true if fill, false if empty
      */
     public boolean fill(){
         return fill;
@@ -685,6 +698,8 @@ public class Quobject extends Quomponent {
 
     /**
      * Update the position of the quobject and its points.
+     * It stores the rotations and position changes and after the frame
+     * is rendered, makes the changes.
      */
     private synchronized void updatePoints(){
         Quaternion deltaRotation = new Quaternion(this.deltaRotation);
@@ -768,7 +783,7 @@ public class Quobject extends Quomponent {
         //Lighting
         if (!alwaysLit){
             for (int i = 0; i < pic.getWorld().getLightSources().size(); i++) {
-                Quisition normal = Math3D.getNormal(newPoints.get(0), newPoints.get(1), newPoints.get(2));
+                Quisition normal = Math3D.getNormal(newPoints.get(1), newPoints.get(0), newPoints.get(2));
                 for (Quisition p : newPoints)
                     p.data[3] += (pic.getWorld().getLightSources().get(i)).getLightLevel(p, normal) / pic.getWorld().getLightSources().size();//Yeah... this makes no sense. Light-wise that is.
             }
@@ -805,7 +820,7 @@ public class Quobject extends Quomponent {
             if (fill && texture == null)
                 Quaphics.fillTri(newPoints.get(i*3),newPoints.get(i*3+1),newPoints.get(i*3+2), camera, fillColor);
             if (outline && texture == null)
-                Quaphics.drawPolygon(new Quisition[]{newPoints.get(i*3),newPoints.get(i*3+1),newPoints.get(i*3+2)}, camera, outlineColor,1);
+                Quaphics.drawPolygon(newPoints.get(i*3), newPoints.get(i*3+1), newPoints.get(i*3+2), camera, outlineColor,-0.01);
         }
     }
 }
